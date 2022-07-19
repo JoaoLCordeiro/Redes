@@ -29,7 +29,7 @@ int ConexaoRawSocket(char *device)
   }
 
   memset(&ir, 0, sizeof(struct ifreq));  	/*dispositivo eth0*/
-  memcpy(ir.ifr_name, device, sizeof(char));
+  memcpy(ir.ifr_name, device, sizeof(char *));
   if (ioctl(soquete, SIOCGIFINDEX, &ir) == -1) {
     printf("Erro no ioctl\n");
     exit(-1);
