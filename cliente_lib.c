@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "geral.h"
 #include "cliente_lib.h"
@@ -17,8 +18,14 @@ int file_size(FILE *arquivo) {
 
 int envia_nome_put(char *file_name) {
 
+    msg_t mensagem;
+    int tamanho = strlen(file_name);
 
+    init_mensagem(&mensagem, tamanho, PUT, file_name);
     
+    //enviar mensagem
+    //Esperar resposta
+
 }
 
 

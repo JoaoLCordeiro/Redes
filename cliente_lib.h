@@ -12,10 +12,10 @@
 int file_size (FILE *arquivo);
 
 /**
- * @brief 
+ * @brief Envia o nome do arqivo para o put
  * 
- * @param file_name 
- * @return int 
+ * @param file_name (_char*_) : Nome do arquivo.
+ * @return int : 1 se deu certo. < 0 se deu algum erro
  */
 int envia_nome_put (char *file_name);
 
