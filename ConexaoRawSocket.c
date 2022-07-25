@@ -1,6 +1,8 @@
 #include <sys/types.h>
-//#include <sys/socket.h>
-#include <linux/socket.h>
+//#include <linux/types.h>
+
+#include <sys/socket.h>
+//#include <linux/socket.h>
 
 //o man htons falou q ta aqui '-'
 #include <arpa/inet.h>
