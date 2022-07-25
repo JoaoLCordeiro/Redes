@@ -12,11 +12,15 @@
 
 #define TAM_BUF 100
 
+
+
 int main(){
     
     char buffer_c[TAM_BUF];
     int soquete = ConexaoRawSocket("lo");
 
+
+    
 
     while (1) {
         printf("Mandando mensagem\n");
