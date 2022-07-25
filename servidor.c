@@ -1,27 +1,32 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+//#include <linux/types.h>
+
+#include <sys/socket.h>
+//#include <linux/socket.h>
+
 #include "ConexaoRawSocket.h"
 
 #define TAM_BUF 100
 
 int main(){
     
-    char buffer_s[TAM_BUF], buffer_c[TAM_BUF];
-
-    scanf("%s", buffer_c);
-
     int soquete = ConexaoRawSocket("lo");
-    printf ("soquete -> %d\n", soquete);
+    // printf ("soquete -> %d\n", soquete);
 
-    if (send(soquete, &buffer_c, strlen(buffer_c), 0) < 0){
-        perror("send(): Error");
+    char buffer_s[TAM_BUF];
+
+    while (1) {
+        
+        if (recv(soquete, buffer_s, TAM_BUF, 0) < 0) {
+            perror("recv(): Error");
+        }
+
+        printf("Chegou mensagem tal -> %s\n", buffer_s);
     }
-
-    if (recv(soquete, buffer_s, TAM_BUF, 0) < 0) {
-        perror("recv(): Error");
-    }
-
-    printf("Servidor -> %s\n", buffer_s);
-
+    
     return 0;
 }

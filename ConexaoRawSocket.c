@@ -1,3 +1,9 @@
+#include "ConexaoRawSocket.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+
 #include <sys/types.h>
 //#include <linux/types.h>
 
@@ -6,15 +12,14 @@
 
 //o man htons falou q ta aqui '-'
 #include <arpa/inet.h>
-
 #include <sys/ioctl.h>
+
+// #include <netinet/in.h>
+
+
 #include <net/ethernet.h>
 #include <linux/if_packet.h>
 #include <linux/if.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include "ConexaoRawSocket.h"
 
 
 int ConexaoRawSocket(char *device)
