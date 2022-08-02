@@ -34,6 +34,46 @@ def estado_jogando():
     pass
 
 
+def joga_dados(msg):
+    
+    
+    mensagem = Mensagem()
+    print("Rodando os dados ...", end='\n')
+    print("Resultado:", end=" ")
+    
+    for i in range(0, 5):
+        numero = random.randint(1, 6)
+        print(f"[{numero}]", end=" ")
+        msg.dados.append(numero)
+    
+    # faz uma vetor que guarda se aquele dado já foi travado
+    travados = list([False, False, False, False, False])
+    
+    resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
+    contador = 1
+    while resposta.upper() == "Y" and contador <= 2:
+        
+        linha = input("Quais dados você deseja travar?\n").split()
+        print(linha)
+        
+        for dado in linha:
+            travados[int(dado)-1] = True
+            
+        for i in range(0, 5):
+            if (not travados[i]):
+                msg.dados[i] = random.randint(1,6)
+               
+        print("Resultado: ", end="\n") 
+        for i in range(0, 5):
+            print(f"[{msg.dados[i]}]", end=" ")
+        print()
+        
+        if contador != 2:
+            resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
+        contador += 1
+        
+    print(msg.dados)
+
 def devolve_porta():
     maquina = input("Qual sua máquina?\n")
     print(maquina)
@@ -64,7 +104,16 @@ if __name__ == "__main__":
             # Manda a mensagem de combinação inicial da rodada 
             sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
             
+            # Recebe a mensagem com a maior aposta e seu jogador
+            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
+            mensagem = pickle.loads(mensagem_bytes)
             
+            if mensagem.jogador == jogador:
+                pass
+                # O mesmo joga
+            else:
+                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+                
         else:
             
             # Recebe a mensagem de combinação inicial da rodada 
@@ -73,25 +122,21 @@ if __name__ == "__main__":
             
             mensagem = lib_m.mensagem_aumenta_aposta(mensagem, jogador)
             
-            mensagem_bytes = pickle.dumps(mensagem) 
+            mensagem_bytes = pickle.dumps(mensagem)
+            
+            # Enviando a mensagem da aposta atual mais o jogador
             sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            
+            
+            # Recebe a mensagem contendo o jogador que jogará 
+            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
+            mensagem = pickle.loads(mensagem_bytes)
+            if mensagem.jogador == jogador:
+                # joga
+                pass
+            else:
+                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
             
         exit(1)     
         
-        
-            
-        mensagem.ficha += 1
-        mensagem.mensagem = mensagem.mensagem + 'a'
-        
-        mensagem_string = pickle.dumps(mensagem)    
-        sock.sendto(mensagem_string, (UDP_IP, UDP_PORT_OUT))
-
-            
-        data, addr = sock.recvfrom(10000)
-        data_variavel = pickle.loads(data)
-        print(f"Mensagem : {data_variavel.mensagem}, Ficha: {data_variavel.ficha}\n")
-        sleep(3)
-        
-        
-    print(jogador, UDP_PORT)
         
