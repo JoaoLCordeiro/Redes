@@ -36,8 +36,8 @@ def estado_jogando():
 
 def joga_dados(msg):
     
-    
-    mensagem = Mensagem()
+    print("Você vai jogar!!!", end="\n")
+    sleep(1)
     print("Rodando os dados ...", end='\n')
     print("Resultado:", end=" ")
     
@@ -71,8 +71,8 @@ def joga_dados(msg):
         if contador != 2:
             resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
         contador += 1
-        
-    print(msg.dados)
+    
+    return msg
 
 def devolve_porta():
     maquina = input("Qual sua máquina?\n")
@@ -109,10 +109,21 @@ if __name__ == "__main__":
             mensagem = pickle.loads(mensagem_bytes)
             
             if mensagem.jogador == jogador:
-                pass
+                
                 # O mesmo joga
+                mensagem = joga_dados(mensagem)
+                
+                # envia a mensagem informando os pontos do jogador
+                mensagem_bytes = pickle.dumps(mensagem)    
+                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT)) 
+                
             else:
+                
+                # Repassou a mensagem
                 sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            
+            # recvfrom recebendo a pontuação do jogador
+            
                 
         else:
             
@@ -132,10 +143,15 @@ if __name__ == "__main__":
             mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
             mensagem = pickle.loads(mensagem_bytes)
             if mensagem.jogador == jogador:
-                # joga
-                pass
+                
+                mensagem = joga_dados(mensagem)
+                
+                # envia a mensagem informando os pontos do jogador
+                mensagem_bytes = pickle.dumps(mensagem)    
+                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
             else:
                 sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            
             
         exit(1)     
         
