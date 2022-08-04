@@ -13,14 +13,14 @@ UDP_PORT_OUT = None
 FICHAS = 10
 
 valor_combinacao = {
-    0: 2
-    ,1: 3
-    ,2: 4
-    ,3: 5
-    ,4: 7
-    ,5: 7
-    ,6: 10
-    ,7: 15
+    1: (2, 'dupla')
+    ,2: (3, 'trio')
+    ,3: (4, 'd_dupla')
+    ,4: (5, 'full_house')
+    ,5: (7, 'seq_alta')
+    ,6: (7, 'seq_baixa')
+    ,7: (10, 'quadra')
+    ,8: (15, 'quinteto')
 }
 
 portas = {
@@ -34,6 +34,85 @@ def estado_jogando():
     pass
 
 
+def resultado(combinacao, dados):
+    
+    aposta = valor_combinacao[int(combinacao)]
+    if aposta[1] == 'dupla':
+        for dado in dados:
+            if dados.count(dado) == 2:
+                return aposta[0]
+        return 0
+    
+    if aposta[1] == 'trio':
+        for dado in dados:
+            if dados.count(dado) == 3:
+                return aposta[0]
+        return 0
+    
+    if aposta[1] == 'd_dupla':
+        
+        contador = 0
+        l_valores_dados = list([1,2,3,4,5,6])
+        
+        for valor_dado in l_valores_dados:
+            if dados.count(valor_dado) == 2:
+                  contador += 1
+                  if contador == 2:
+                    return aposta[0]
+        return 0
+    
+    if aposta[1] == 'full_house':
+        
+        contador = 0
+        l_valores_dados = list([1,2,3,4,5,6])
+        
+        for valor_dado in l_valores_dados:
+            if dados.count(valor_dado) == 2:
+                contador += contador + 2
+            elif dados.count(valor_dado) == 3:
+                contador += contador + 3
+            
+            if contador == 5:
+                return aposta[0]
+        return 0
+    
+    if aposta[1] == 'seq_alta':
+        
+        contador = 0
+        l_valores_dados = list([2,3,4,5,6])
+        
+        for valor_dado in l_valores_dados:
+            if dados.count(valor_dado) == 1:
+                contador += contador + 1
+        if contador == 5:
+            return aposta[0]
+        return 0
+    
+    if aposta[1] == 'seq_baixa':
+        
+        contador = 0
+        l_valores_dados = list([1,2,3,4,5])
+        
+        for valor_dado in l_valores_dados:
+            if dados.count(valor_dado) == 1:
+                contador += contador + 1
+        if contador == 5:
+            return aposta[0]
+        return 0
+    
+    if aposta[1] == 'quadra':
+        for dado in dados:
+            if dados.count(dado) == 4:
+                return aposta[0]
+        return 0
+    
+    if aposta[1] == 'quinteto':
+        for dado in dados:
+            if dados.count(dado) == 5:
+                return aposta[0]
+        return 0
+
+            
 def joga_dados(msg):
     
     print("Você vai jogar!!!", end="\n")
@@ -71,6 +150,10 @@ def joga_dados(msg):
         if contador != 2:
             resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
         contador += 1
+    
+    global FICHAS
+    FICHAS = FICHAS - msg.saldo + resultado(msg.combinacao, msg.dados)
+    msg.saldo = FICHAS
     
     return msg
 
@@ -115,14 +198,22 @@ if __name__ == "__main__":
                 
                 # envia a mensagem informando os pontos do jogador
                 mensagem_bytes = pickle.dumps(mensagem)    
-                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT)) 
+                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
                 
             else:
                 
                 # Repassou a mensagem
                 sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
             
-            # recvfrom recebendo a pontuação do jogador
+            # recebendo a pontuação do jogador
+            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
+            mensagem = pickle.loads(mensagem_bytes)
+            
+            print(f"O jogador {mensagem.jogador} aumentou aposta para {mensagem.saldo}.", end="\n")
+            print(f"Ele apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
+            
+            # Repassando a pontuação do jogador
+            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
             
                 
         else:
@@ -151,6 +242,22 @@ if __name__ == "__main__":
                 sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
             else:
                 sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            
+            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
+            mensagem = pickle.loads(mensagem_bytes)
+            sleep(1.5)
+            
+            print(f"O jogador {mensagem.jogador} aumentou aposta para {mensagem.saldo}.", end="\n")
+            print(f"Ele apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
+            
+            # if mensagem.jogador == jogador:
+            #     FICHAS = FICHAS + (mensagem.saldo - 1)
+            
+            # Repassando a pontuação do jogador
+            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            print(FICHAS)
+            
+            
             
             
         exit(1)     
