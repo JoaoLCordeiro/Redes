@@ -33,6 +33,15 @@ def mensagem_aumenta_aposta(msg, jogador_atual):
     
     return msg
         
+
+def mensagem_bastao(jogador):
+    
+    mensagem = Mensagem()
+    mensagem.bastao = True
+    
+    mensagem.jogador = (jogador % 4) + 1
+    
+    return mensagem
         
         
         
