@@ -30,11 +30,18 @@ portas = {
     ,4 : 2010
 }
 
-def estado_jogando():
-    pass
-
 
 def resultado(combinacao, dados):
+    """De acordo com a combinação e a jogada nos dados
+    retorna sua pontuação.
+
+    Args:
+        combinacao (_str_): Combinação que o jogador escolheu
+        dados (_list_): Dados que o jogador jogou.
+
+    Returns:
+        _int_: Valor da jogada
+    """
 
     aposta = valor_combinacao[int(combinacao)]
     if aposta[1] == 'dupla':
@@ -114,12 +121,21 @@ def resultado(combinacao, dados):
 
 
 def joga_dados(msg):
+    """Função que toma conta da jogada do jogador
+
+    Args:
+        msg (_Mensagem_): mensagem contendo a maior aposta e seu jogador.
+
+    Returns:
+        _Mensagem_: mensagem contendo a jogada.
+    """
 
     print("Você vai jogar!!!", end="\n")
     sleep(1)
     print("Rodando os dados ...", end='\n')
     print("Resultado:", end=" ")
 
+    # Joga os dados (i.e. escolhe aleatoriamente entre 1 a 6 cinco vezes)
     for i in range(0, 5):
         numero = random.randint(1, 6)
         print(f"[{numero}]", end=" ")
@@ -130,14 +146,18 @@ def joga_dados(msg):
 
     resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
     contador = 1
+    
+    # Se o jogador digitou sim e o contador é menor que 2
     while resposta.upper() == "Y" and contador <= 2:
 
         linha = input("Quais dados você deseja travar?\n").split()
         print(linha)
 
+        # Trava os dados que ele escolheu
         for dado in linha:
             travados[int(dado)-1] = True
 
+        # Rejoga o restante
         for i in range(0, 5):
             if (not travados[i]):
                 msg.dados[i] = random.randint(1,6)
@@ -152,13 +172,27 @@ def joga_dados(msg):
         contador += 1
 
     global FICHAS
+    
+    # Atualiza o saldo do jogador
     FICHAS = FICHAS - msg.saldo + resultado(msg.combinacao, msg.dados)
+    
+    # Atualiza a mensagem
     msg.saldo = FICHAS
 
     return msg
 
 
 def devolve_porta():
+    """De acordo com o jogador retorna a porta utilizada
+
+    Raises:
+        KeyError: Caso o jogador escolha um índici fora do range
+
+    Returns:
+        _int_: A máquina (i.e jogador)
+        _int_: Porta de entrada
+        _int_: Porta de saída
+    """
     maquina = input("Qual sua máquina?\n")
     print(maquina)
     if int(maquina) in range(1, 4+1):
