@@ -337,7 +337,7 @@ if __name__ == "__main__":
                 envia_mensagem(mensagem)
 
             mensagem = recebe_mensagem()
-            # sleep(1.5)
+            sleep(1.5)
 
             imprime_saldo(mensagem)
 
