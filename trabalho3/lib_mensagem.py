@@ -1,9 +1,14 @@
 from Mensagem import Mensagem
 import pickle
+import copy
 
 def calcula_paridade(msg):
-    
-    mensagem_bytes = pickle.dumps(msg)
+
+    #zera a paridade da mensagem ja que o calculo é fieto com ela zerada
+    msg_aux = copy.copy(msg)
+    msg_aux.paridade = 0    
+
+    mensagem_bytes = pickle.dumps(msg_aux)
     aux = mensagem_bytes[0]
     for i in range(1, len(mensagem_bytes)):
         aux = aux ^ mensagem_bytes[i]
@@ -11,7 +16,8 @@ def calcula_paridade(msg):
     return aux
 
 
-def mensagem_combinacao(combinacao, saldo, jogador):
+def mensagem_combinacao(saldo, jogador):
+    combinacao = input("Escolha a combinação?\n> ")
     
     mensagem = Mensagem()
     
@@ -29,12 +35,12 @@ def mensagem_aumenta_aposta(msg, jogador_atual):
     
     print("A aposta atua é a seguinte:", end="\n")
     print(f"O jogador {msg.jogador} está apostando {msg.saldo} ficha(s) na combinação : {msg.combinacao}", end='\n')
-    resposta = input("Quer aumentar a aposta ? 'Y' para sim e 'N' para não\n")
+    resposta = input("Quer aumentar a aposta ? 'Y' para sim e 'N' para não\n> ")
     
     if resposta.upper() == "Y":
         
         # Usuário escolhe quanto quer aumentar na aposta
-        resposta = int(input("Quanto você quer aumentar a aposta ?\n"))
+        resposta = int(input("Quanto você quer aumentar a aposta ?\n> "))
         while resposta <= 0:
             resposta = int(input("A aposta não pode ser menor que 1\n"))
         
@@ -58,7 +64,7 @@ def mensagem_bastao(jogador):
     mensagem.jogador = (jogador % 4) + 1
     
     mensagem.paridade = calcula_paridade(mensagem)
-    return mensagemv
+    return mensagem
 
 def mensagem_erro():
     

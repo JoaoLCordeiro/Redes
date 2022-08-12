@@ -1,6 +1,7 @@
 import random
 import socket
 import pickle
+import copy
 from time import sleep
 from Mensagem import Mensagem
 #from 
@@ -30,7 +31,6 @@ portas = {
     ,3 : 1456
     ,4 : 2010
 }
-
 
 def resultado(combinacao, dados):
     """De acordo com a combinação e a jogada nos dados
@@ -120,7 +120,6 @@ def resultado(combinacao, dados):
                 return aposta[0]
         return 0
 
-
 def joga_dados(msg):
     """Função que toma conta da jogada do jogador
 
@@ -142,17 +141,20 @@ def joga_dados(msg):
         print(f"[{numero}]", end=" ")
         msg.dados.append(numero)
 
+    # pula linha
+    print("")
+
     # faz uma vetor que guarda se aquele dado já foi travado
     travados = list([False, False, False, False, False])
 
-    resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
+    resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n> ")
     contador = 1
     
     # Se o jogador digitou sim e o contador é menor que 2
     while resposta.upper() == "Y" and contador <= 2:
 
-        linha = input("Quais dados você deseja travar?\n").split()
-        print(linha)
+        linha = input("Quais dados você deseja travar?\n> ").split()
+        # print(linha)
 
         # Trava os dados que ele escolheu
         for dado in linha:
@@ -169,7 +171,7 @@ def joga_dados(msg):
         print()
 
         if contador != 2:
-            resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n")
+            resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n> ")
         contador += 1
 
     global FICHAS
@@ -180,46 +182,67 @@ def joga_dados(msg):
     # Atualiza a mensagem
     msg.saldo = FICHAS
 
+    msg.paridade = lib_m.calcula_paridade(msg)
     return msg
 
+def testa_paridade(msg):
 
-# def testa_paridade(msg):
-    
-#     mensagem_bytes = pickle.dumps(msg)
+    aux = copy.copy(msg)
+    aux.paridade = 0
 
+    # pega a paridade da mensagem que chegou
+    paridade_aux = lib_m.calcula_paridade(aux)
+
+    # verifica se as paridades conferem
+
+    if paridade_aux != msg.paridade:
+        return False
+
+    return True
 
 def detecta_erro(msg):
     
     if msg.marcador_inicio != 126:
         return True
-    if not paridade(msg):
+    if not testa_paridade(msg):
         return True
 
     return False
 
-
 def recebe_mensagem():
     mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-    print("AAAAAAAAAAAAAAAAAAAAAH ->", mensagem_bytes, type(mensagem_bytes), mensagem_bytes[0], len(mensagem_bytes), dir(mensagem_bytes), sep='\n')
     mensagem = pickle.loads(mensagem_bytes)
     
-    # if mensagem.jogador == -1:
-    #     envia_mensagem(mensagem)
-    #     # termina_jogo(0)
-    #     exit(1)
-    # if detecta_erro():
-    #     mensagem = lib_m.mensagem_erro()
-    #     envia_mensagem(mensagem)
-    #     # termina_jogo(0)
-    #     exit(1)
+    if mensagem.jogador == -1:
+        envia_mensagem(mensagem)
+        termina_jogo(0)
+
+    if detecta_erro(mensagem):
+        mensagem = lib_m.mensagem_erro()
+        envia_mensagem(mensagem)
+        termina_jogo(0)
         
     return mensagem
-
 
 def envia_mensagem(msg):
     mensagem_bytes = pickle.dumps(msg)
     sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
 
+def termina_jogo(flag):
+    if flag == 0:
+        print("Erro detectado nas mensagens da rede")
+        print("Terminando...")
+    else:
+        print(f"O jogador {flag} perdeu o jogo")
+        print("O jogo será finalizado...")
+
+    exit(1)
+
+def imprime_saldo(mensagem):
+    print("")
+    print(f"O jogador {mensagem.jogador} apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
+    print(f"Ele está com o saldo {mensagem.saldo}.", end="\n")
+    print("\nEsta rodada acabou, próxima rodada...\n\n")
 
 def devolve_porta():
     """De acordo com o jogador retorna a porta utilizada
@@ -232,8 +255,7 @@ def devolve_porta():
         _int_: Porta de entrada
         _int_: Porta de saída
     """
-    maquina = input("Qual sua máquina?\n")
-    print(maquina)
+    maquina = input("Qual sua máquina?\n> ")
     if int(maquina) in range(1, 4+1):
         return int(maquina), portas[int(maquina)], portas[(int(maquina) % 4) + 1]
 
@@ -255,10 +277,7 @@ if __name__ == "__main__":
     while (True):
 
         if BASTAO:
-            combinacao = input("Escolha a combinação?\n")
-            mensagem = lib_m.mensagem_combinacao(combinacao,1,jogador)
-            print(mensagem.paridade)
-            exit(1)
+            mensagem = lib_m.mensagem_combinacao(1,jogador)
 
             # Manda a mensagem de combinação inicial da rodada
             # e recebe a mensagem com a maior aposta e seu jogador
@@ -279,16 +298,13 @@ if __name__ == "__main__":
             # recebendo a pontuação do jogador
             mensagem = recebe_mensagem()
 
-            print(f"O jogador {mensagem.jogador} aumentou aposta para {mensagem.saldo}.", end="\n")
-            print(f"Ele apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
+            imprime_saldo(mensagem)
             
             # Repassando a pontuação do jogador
             envia_mensagem(mensagem)
             
             if mensagem.saldo <= 0:
-                print(f"O jogador {mensagem.jogador} perdeu o jogo")
-                print("O jogo será finalizado")
-                exit(1)
+                termina_jogo(mensagem.jogador)
             
             # mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
             mensagem = recebe_mensagem()
@@ -302,9 +318,9 @@ if __name__ == "__main__":
         else:
 
             mensagem = recebe_mensagem()
+
             if mensagem.bastao:
                 mensagem = recebe_mensagem()
-
 
             # Enviando a mensagem da aposta atual mais o jogador
             mensagem = lib_m.mensagem_aumenta_aposta(mensagem, jogador)
@@ -321,19 +337,14 @@ if __name__ == "__main__":
                 envia_mensagem(mensagem)
 
             mensagem = recebe_mensagem()
-            sleep(1.5)
+            # sleep(1.5)
 
-            # escreve_saldo()
-            print(f"O jogador {mensagem.jogador} está com o saldo {mensagem.saldo}.", end="\n")
-            print(f"Ele apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
+            imprime_saldo(mensagem)
 
             envia_mensagem(mensagem)
             
             if mensagem.saldo <= 0:
-                # termina_jogo()
-                print(f"O jogador {mensagem.jogador} perdeu o jogo")
-                print("O jogo será finalizado")
-                exit(1)
+                termina_jogo(mensagem.jogador)
 
             mensagem = recebe_mensagem()
             
