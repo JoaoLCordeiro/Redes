@@ -3,6 +3,7 @@ import socket
 import pickle
 from time import sleep
 from Mensagem import Mensagem
+#from 
 import lib_mensagem as lib_m
 
 BUFFERSIZE = 4096
@@ -182,9 +183,9 @@ def joga_dados(msg):
     return msg
 
 
-def paridade(msg):
+# def testa_paridade(msg):
     
-    mensagem_bytes = pickle.dumps(msg)
+#     mensagem_bytes = pickle.dumps(msg)
 
 
 def detecta_erro(msg):
@@ -199,7 +200,7 @@ def detecta_erro(msg):
 
 def recebe_mensagem():
     mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-    print("AAAAAAAAAAAAAAAAAAAAAH ->", mensagem_bytes, type(mensagem_bytes), dir(mensagem_bytes), sep='\n')
+    print("AAAAAAAAAAAAAAAAAAAAAH ->", mensagem_bytes, type(mensagem_bytes), mensagem_bytes[0], len(mensagem_bytes), dir(mensagem_bytes), sep='\n')
     mensagem = pickle.loads(mensagem_bytes)
     
     # if mensagem.jogador == -1:
@@ -256,7 +257,8 @@ if __name__ == "__main__":
         if BASTAO:
             combinacao = input("Escolha a combinação?\n")
             mensagem = lib_m.mensagem_combinacao(combinacao,1,jogador)
-
+            print(mensagem.paridade)
+            exit(1)
 
             # Manda a mensagem de combinação inicial da rodada
             # e recebe a mensagem com a maior aposta e seu jogador

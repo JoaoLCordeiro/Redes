@@ -1,4 +1,15 @@
 from Mensagem import Mensagem
+import pickle
+
+def calcula_paridade(msg):
+    
+    mensagem_bytes = pickle.dumps(msg)
+    aux = mensagem_bytes[0]
+    for i in range(1, len(mensagem_bytes)):
+        aux = aux ^ mensagem_bytes[i]
+    
+    return aux
+
 
 def mensagem_combinacao(combinacao, saldo, jogador):
     
@@ -7,6 +18,8 @@ def mensagem_combinacao(combinacao, saldo, jogador):
     mensagem.combinacao = combinacao
     mensagem.saldo = saldo
     mensagem.jogador = jogador
+    
+    mensagem.paridade = calcula_paridade(mensagem)
     
     return mensagem
 
@@ -29,8 +42,11 @@ def mensagem_aumenta_aposta(msg, jogador_atual):
         mensagem_nova.jogador = jogador_atual
         mensagem_nova.saldo = msg.saldo + resposta
         mensagem_nova.combinacao = msg.combinacao
+        
+        mensagem_nova.paridade = calcula_paridade(mensagem_nova)
         return mensagem_nova
     
+    msg.paridade = calcula_paridade(msg)
     return msg
         
 
@@ -41,12 +57,15 @@ def mensagem_bastao(jogador):
     
     mensagem.jogador = (jogador % 4) + 1
     
-    return mensagem
+    mensagem.paridade = calcula_paridade(mensagem)
+    return mensagemv
 
 def mensagem_erro():
     
     mensagem = Mensagem()
     mensagem.jogador = -1
+    
+    mensagem.paridade = calcula_paridade(mensagem)
     return mensagem
         
         
