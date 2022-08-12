@@ -182,6 +182,44 @@ def joga_dados(msg):
     return msg
 
 
+def paridade(msg):
+    
+    mensagem_bytes = pickle.dumps(msg)
+
+
+def detecta_erro(msg):
+    
+    if msg.marcador_inicio != 126:
+        return True
+    if not paridade(msg):
+        return True
+
+    return False
+
+
+def recebe_mensagem():
+    mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
+    print("AAAAAAAAAAAAAAAAAAAAAH ->", mensagem_bytes, type(mensagem_bytes), dir(mensagem_bytes), sep='\n')
+    mensagem = pickle.loads(mensagem_bytes)
+    
+    # if mensagem.jogador == -1:
+    #     envia_mensagem(mensagem)
+    #     # termina_jogo(0)
+    #     exit(1)
+    # if detecta_erro():
+    #     mensagem = lib_m.mensagem_erro()
+    #     envia_mensagem(mensagem)
+    #     # termina_jogo(0)
+    #     exit(1)
+        
+    return mensagem
+
+
+def envia_mensagem(msg):
+    mensagem_bytes = pickle.dumps(msg)
+    sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+
+
 def devolve_porta():
     """De acordo com o jogador retorna a porta utilizada
 
@@ -218,14 +256,12 @@ if __name__ == "__main__":
         if BASTAO:
             combinacao = input("Escolha a combinação?\n")
             mensagem = lib_m.mensagem_combinacao(combinacao,1,jogador)
-            mensagem_bytes = pickle.dumps(mensagem)
+
 
             # Manda a mensagem de combinação inicial da rodada
-            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
-
-            # Recebe a mensagem com a maior aposta e seu jogador
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-            mensagem = pickle.loads(mensagem_bytes)
+            # e recebe a mensagem com a maior aposta e seu jogador
+            envia_mensagem(mensagem)
+            mensagem = recebe_mensagem()
 
             if mensagem.jogador == jogador:
 
@@ -233,94 +269,75 @@ if __name__ == "__main__":
                 mensagem = joga_dados(mensagem)
 
                 # envia a mensagem informando os pontos do jogador
-                mensagem_bytes = pickle.dumps(mensagem)
-                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
-
+                envia_mensagem(mensagem)
             else:
-
                 # Repassou a mensagem
-                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+                envia_mensagem(mensagem)
 
             # recebendo a pontuação do jogador
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-            mensagem = pickle.loads(mensagem_bytes)
+            mensagem = recebe_mensagem()
 
             print(f"O jogador {mensagem.jogador} aumentou aposta para {mensagem.saldo}.", end="\n")
             print(f"Ele apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
             
             # Repassando a pontuação do jogador
-            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            envia_mensagem(mensagem)
             
             if mensagem.saldo <= 0:
                 print(f"O jogador {mensagem.jogador} perdeu o jogo")
                 print("O jogo será finalizado")
                 exit(1)
             
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-
+            # mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
+            mensagem = recebe_mensagem()
+            
             mensagem = lib_m.mensagem_bastao(jogador)
             BASTAO = False
             
             
-            mensagem_bytes = pickle.dumps(mensagem)
             # Manda a mensagem do bastão
-            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
-            
-
+            envia_mensagem(mensagem)
         else:
 
-            # Recebe a mensagem de combinação inicial da rodada
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-            mensagem = pickle.loads(mensagem_bytes)
-            
+            mensagem = recebe_mensagem()
             if mensagem.bastao:
-                mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-                mensagem = pickle.loads(mensagem_bytes)
+                mensagem = recebe_mensagem()
 
-            mensagem = lib_m.mensagem_aumenta_aposta(mensagem, jogador)
-
-            mensagem_bytes = pickle.dumps(mensagem)
 
             # Enviando a mensagem da aposta atual mais o jogador
-            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
-
-
+            mensagem = lib_m.mensagem_aumenta_aposta(mensagem, jogador)
+            envia_mensagem(mensagem)
+            
             # Recebe a mensagem contendo o jogador que jogará
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-            mensagem = pickle.loads(mensagem_bytes)
+            mensagem = recebe_mensagem()
             if mensagem.jogador == jogador:
 
                 mensagem = joga_dados(mensagem)
-
                 # envia a mensagem informando os pontos do jogador
-                mensagem_bytes = pickle.dumps(mensagem)
-                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+                envia_mensagem(mensagem)
             else:
-                sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+                envia_mensagem(mensagem)
 
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-            mensagem = pickle.loads(mensagem_bytes)
+            mensagem = recebe_mensagem()
             sleep(1.5)
 
-            print(f"O jogador {mensagem.jogador} aumentou aposta para {mensagem.saldo}.", end="\n")
+            # escreve_saldo()
+            print(f"O jogador {mensagem.jogador} está com o saldo {mensagem.saldo}.", end="\n")
             print(f"Ele apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
 
-            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
+            envia_mensagem(mensagem)
             
             if mensagem.saldo <= 0:
+                # termina_jogo()
                 print(f"O jogador {mensagem.jogador} perdeu o jogo")
                 print("O jogo será finalizado")
                 exit(1)
 
-            mensagem_bytes, addr = sock.recvfrom(BUFFERSIZE)
-            mensagem = pickle.loads(mensagem_bytes)
+            mensagem = recebe_mensagem()
             
             if mensagem.jogador == jogador:
                 BASTAO = True
             
-            sock.sendto(mensagem_bytes, (UDP_IP, UDP_PORT_OUT))
-
-
-            # print(FICHAS)
+            envia_mensagem(mensagem)
 
 

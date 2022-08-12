@@ -42,6 +42,12 @@ def mensagem_bastao(jogador):
     mensagem.jogador = (jogador % 4) + 1
     
     return mensagem
+
+def mensagem_erro():
+    
+    mensagem = Mensagem()
+    mensagem.jogador = -1
+    return mensagem
         
         
         
