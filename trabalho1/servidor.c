@@ -9,6 +9,8 @@
 //#include <linux/socket.h>
 
 #include "ConexaoRawSocket.h"
+#include "servidor_lib.h"
+#include "geral.h"
 
 #define TAM_BUF 100
 
@@ -18,14 +20,24 @@ int main(){
     // printf ("soquete -> %d\n", soquete);
 
     char buffer_s[TAM_BUF];
-
+    msg_t mensagem;
     while (1) {
+          
         
-        if (recv(soquete, buffer_s, TAM_BUF, 0) < 0) {
-            perror("recv(): Error");
+        switch (recebe_mensagem_server(soquete, &mensagem))
+        {
+        case PUT:
+            trata_put_servidor(soquete, &mensagem);
+            break;
+        
+        case NACK:
+            //envia_nack()
+            
+            break;
         }
+        
+        imprime_mensagem(&mensagem);
 
-        printf("Chegou mensagem tal -> %s\n", buffer_s);
     }
     
     return 0;
