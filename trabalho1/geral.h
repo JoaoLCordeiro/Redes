@@ -5,7 +5,6 @@
 
 #define MARC_INICIO 126
 
-
 /*-----------------------------------------TIPOS-----------------------------------------------*/
 #define OK      1
 #define NACK    2
@@ -34,6 +33,11 @@ typedef struct msg_t
 
 } msg_t;
 
+/***/
+int manda_mensagem (int soquete, msg_t *mensagem);
+
+/***/
+int recebe_mensagem (int soquete, msg_t *mensagem);
 
 /**
  * @brief Calcula a paridade dos dados

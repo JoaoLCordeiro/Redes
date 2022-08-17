@@ -10,6 +10,17 @@
 
 #include "geral.h"
 
+int manda_mensagem (int soquete, msg_t *mensagem){
+    if (send(soquete, &mensagem, sizeof(msg_t), 0) < 0)
+        return 0;
+    return 1;
+}
+
+int recebe_mensagem (int soquete, msg_t *mensagem){
+    if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0) 
+        return 0;
+    return 1;
+}
 
 char calcula_paridade (int tamanho, char * dados){
     

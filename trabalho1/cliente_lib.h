@@ -13,6 +13,9 @@
  */
 int file_size (FILE *arquivo);
 
+/***/
+void trata_put (int soquete);
+
 /**
  * @brief Envia o nome do arquivo para o put
  * 
@@ -31,7 +34,7 @@ int envia_nome_put (char *file_name);
 int put_client (int soquete, char *file_name);
 
 
-int recebe_mensagem_cliente_put(int soquete, msg_t *mensagem);
+int recebe_retorno_put(int soquete, msg_t *mensagem);
 
 
 #endif

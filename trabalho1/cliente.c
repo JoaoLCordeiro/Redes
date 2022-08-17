@@ -1,4 +1,4 @@
-#include <stdio.h>
+-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -34,22 +34,7 @@ int main(){
         switch (compara_comando(buffer_c)) {
 
             case PUT:
-                //envia_mensagem_put
-                printf("Digite o nome do arquivo\n");
-                scanf("%s", buffer_c);
-                init_mensagem(&mensagem, strlen(buffer_c), 0, PUT, buffer_c);
-                if (send(soquete, &mensagem, sizeof(msg_t), 0) < 0){
-                    perror("send(): Error");
-                }
-                switch (recebe_mensagem_cliente_put(soquete, &mensagem)) {
-                    case OK:
-                        imprime_mensagem(&mensagem);
-                        break;
-
-                    default:
-                        break;
-                }
-                break;
+                trata_put (int soquete);
             case GET:
                 //envia_mensagem_get
                 if (send(soquete, buffer_c, TAM_BUF, 0) < 0){
