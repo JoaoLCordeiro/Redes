@@ -23,19 +23,7 @@ int file_size(FILE *arquivo) {
 }
 
 
-int envia_nome_put(char *file_name) {
-
-    msg_t mensagem;
-    int tamanho = strlen(file_name);
-
-    init_mensagem(&mensagem, tamanho, 0, PUT, file_name);
-    
-    //enviar mensagem
-    //Esperar resposta
-
-}
-
-void put_dados (int soquete){
+void put_dados_cliente (int soquete){
     msg_t mensagem;
 
     char buffer_arq[TAM_BUF];
@@ -83,7 +71,7 @@ void put_dados (int soquete){
     }
 }
 
-void put_tamanho (int soquete){
+void put_tamanho_cliente (int soquete){
     msg_t mensagem;
     
     int tamanho = 10;
@@ -99,7 +87,7 @@ void put_tamanho (int soquete){
         switch (recebe_retorno_put(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
-                put_dados(soquete);
+                put_dados_cliente(soquete);
                 break;
 
             //se for erro, vai pegar outro comando
@@ -115,7 +103,7 @@ void put_tamanho (int soquete){
     }
 }
 
-void trata_put (int soquete){
+void trata_put_cliente (int soquete){
     msg_t mensagem;
     char buffer_nome[TAM_BUF];
 
@@ -126,12 +114,12 @@ void trata_put (int soquete){
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
-            perror("Erro ao enviar mensagem no trata_put");
+            perror("Erro ao enviar mensagem no trata_put_cliente");
 
         switch (recebe_retorno_put(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
-                put_tamanho(soquete);
+                put_tamanho_cliente(soquete);
                 break;
 
             //se for erro, vai pegar outro comando
@@ -152,7 +140,7 @@ void trata_put (int soquete){
 int recebe_retorno_put(int soquete, msg_t *mensagem){
     while (1) {
         if (! recebe_mensagem (int soquete, msg_t *mensagem)) 
-            perror("Erro ao receber mensagem no recebe_retorno_nome_put");
+            perror("Erro ao receber mensagem no recebe_retorno_put");
         
         // Verifica se o marcador de início e a paridade são os corretos
         if (mensagem->marc_inicio == MARC_INICIO) {

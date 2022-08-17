@@ -34,7 +34,7 @@ int main(){
         switch (compara_comando(buffer_c)) {
 
             case PUT:
-                trata_put (int soquete);
+                trata_put_cliente (int soquete);
             case GET:
                 //envia_mensagem_get
                 if (send(soquete, buffer_c, TAM_BUF, 0) < 0){

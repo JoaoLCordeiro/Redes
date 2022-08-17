@@ -14,15 +14,7 @@
 int file_size (FILE *arquivo);
 
 /***/
-void trata_put (int soquete);
-
-/**
- * @brief Envia o nome do arquivo para o put
- * 
- * @param file_name (_char*_) : Nome do arquivo.
- * @return int : 1 se deu certo. < 0 se deu algum erro
- */
-int envia_nome_put (char *file_name);
+void trata_put_cliente (int soquete);
 
 /**
  * @brief Manda um arquivo para o servidor

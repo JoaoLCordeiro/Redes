@@ -9,17 +9,36 @@
 //#include <linux/socket.h>
 
 #include "geral.h"
-
+#include "servidor_lib.h"
 
 void trata_put_servidor(int soquete, msg_t* mensagem){
+
+    msg_t mensagem;
 
     //if (! tem_permissao())
         //envia_erro()
         //return;
 
-    envia_ok(soquete);
-    //recebe_mensagem_servidor_put()
+    //cria um ok
+    init_mensagem(&mensagem, 0, 0, OK, "");
+   
+    while (1){
+        if (! manda_mensagem (soquete, &mensagem))
+            perror("Erro ao enviar mensagem no trata_put_servidor");
 
+        switch (recebe_retorno_put(soquete, &mensagem)) {
+            //se for TAM, continua
+            case TAM:
+                put_tamanho_server(soquete);
+                break;
+
+            //dá break e re-envia o ok
+            case NACK:
+                break;
+        }
+    }
+
+    return;
 }
 
 int recebe_mensagem_server(int soquete, msg_t *mensagem) {
