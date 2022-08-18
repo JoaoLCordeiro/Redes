@@ -14,6 +14,8 @@
 
 #define TAM_BUF 100
 
+int sequencia_global = 1;
+
 int main(){
     
     int soquete = ConexaoRawSocket("lo");
@@ -36,7 +38,7 @@ int main(){
             break;
         }
         
-        imprime_mensagem(&mensagem);
+        //imprime_mensagem(&mensagem);
 
     }
     

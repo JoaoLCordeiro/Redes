@@ -21,6 +21,10 @@
 #define NA_TELA 63
 /*---------------------------------------------------------------------------------------------*/
 
+
+extern int sequencia_global;
+
+
 typedef struct msg_t
 {
   
@@ -104,6 +108,9 @@ void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensage
  * 
  */
 void envia_ok(int soquete);
+
+
+int recebe_retorno(int soquete, msg_t *mensagem);
 
 
 

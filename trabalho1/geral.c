@@ -11,15 +11,24 @@
 #include "geral.h"
 
 int manda_mensagem (int soquete, msg_t *mensagem){
-    if (send(soquete, &mensagem, sizeof(msg_t), 0) < 0)
+    if (send(soquete, mensagem, sizeof(msg_t), 0) < 0)
         return 0;
+    
+    sequencia_global++;
     return 1;
 }
 
 int recebe_mensagem (int soquete, msg_t *mensagem){
-    if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0) 
-        return 0;
-    return 1;
+    while (1){
+        if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0)
+            return 0;
+    
+        if (mensagem->sequencia != sequencia_global)
+            continue;
+
+        sequencia_global++;
+        return 1;
+    }
 }
 
 char calcula_paridade (int tamanho, char * dados){
@@ -75,7 +84,8 @@ void imprime_mensagem(msg_t *mensagem) {
     printf("Sequencia -> %d\n", mensagem->sequencia);
     printf("Tipo -> %d\n", mensagem->tipo);
     printf("Mensagem ->%s\n", mensagem->dados);
-    printf("Paridade %d\n", (int)mensagem->paridade);
+    printf("Paridade -> %d\n", (int)mensagem->paridade);
+    printf("Sequência global -> %d\n", sequencia_global);
 
 }
 
@@ -97,6 +107,38 @@ void envia_ok(int soquete) {
     if (send(soquete, &aux, sizeof(msg_t), 0) < 0){
         perror("send(): envia_ok");
         return;
+    }
+
+}
+
+int recebe_retorno(int soquete, msg_t *mensagem){
+    printf("OI\n");
+    while (1) {
+        if (! recebe_mensagem (soquete, mensagem)) 
+            perror("Erro ao receber mensagem no recebe_retorno_put");
+        
+        // Verifica se o marcador de início e a paridade são os corretos
+        if (mensagem->marc_inicio == MARC_INICIO) {
+            //Testa a paridade
+            if (testa_paridade(mensagem)) {
+
+                //se for um NACK, reenvia a mensagem
+                if (mensagem->tipo == NACK){
+                    //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
+                    if (! manda_mensagem (soquete, mensagem))
+                        perror("Erro ao re-mandar mensagem no recebe_retorno_put");
+                }
+
+                // Senão retorna o tipo    
+                else 
+                    return mensagem->tipo;
+            
+            }
+            else
+            //retorna NACK para mensagens com erro no marcador ou na paridade
+                return NACK;
+        }
+        return NACK;
     }
 
 }

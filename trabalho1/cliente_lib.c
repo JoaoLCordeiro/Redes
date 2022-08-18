@@ -26,23 +26,23 @@ int file_size(FILE *arquivo) {
 void put_dados_cliente (int soquete){
     msg_t mensagem;
 
-    char buffer_arq[TAM_BUF];
+    char buffer_arq[TAM_BUFFER_DADOS];
     //abre o arquivo
-    while (/*AQUIVO NAO ACABOU*/){
-        buffer_arq = /*le pedaco do arquivo*/
+    while (/*AQUIVO NAO ACABOU*/1){
+        //buffer_arq = /*le pedaco do arquivo*/
 
         init_mensagem(&mensagem, sizeof(buffer_arq), 0, DADOS, buffer_arq);
 
-        bool ack = false;
+        int ack = 0;
 
         while (! ack){
             if (! manda_mensagem (soquete, &mensagem))
                 perror("Erro ao enviar mensagem no put_dados");
 
-            switch (recebe_retorno_put(soquete, &mensagem)) {
+            switch (recebe_retorno(soquete, &mensagem)) {
                 //se for ack, quebra o laço interno e vai pro laço externo pegar mais dados
                 case ACK:
-                    ack = true;
+                    ack = 1;
                     break;
 
                 //dá break e re-envia a msg quando volta o laço
@@ -56,11 +56,11 @@ void put_dados_cliente (int soquete){
     init_mensagem(&mensagem, 0, 0, FIM, "");
 
     //considerando que o servidor responde um FIM com um ACK
-    while (! ack){
+    while (1){
         if (! manda_mensagem (soquete, &mensagem))
             perror("Erro ao enviar mensagem no put_dados");
 
-        switch (recebe_retorno_put(soquete, &mensagem)) {
+        switch (recebe_retorno(soquete, &mensagem)) {
             //se for ack, acaba
             case ACK:
                 return;
@@ -77,14 +77,15 @@ void put_tamanho_cliente (int soquete){
     int tamanho = 10;
     //tamanho = tamanho_do_arquivo
 
+    return;
     //tipo DESC pois acho que o TAMANHO conta como descrição
-    init_mensagem(&mensagem, sizeof(int), 0, DESC, &tamanho);
+    init_mensagem(&mensagem, sizeof(int), sequencia_global, DESC, &tamanho);
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
             perror("Erro ao enviar mensagem no put_tamanho");
 
-        switch (recebe_retorno_put(soquete, &mensagem)) {
+        switch (recebe_retorno(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
                 put_dados_cliente(soquete);
@@ -105,20 +106,22 @@ void put_tamanho_cliente (int soquete){
 
 void trata_put_cliente (int soquete){
     msg_t mensagem;
-    char buffer_nome[TAM_BUF];
+    char buffer_nome[TAM_BUFFER_DADOS];
 
     //envia_mensagem_put
     printf("Digite o nome do arquivo\n");
-    scanf("%s", buffer_c);
-    init_mensagem(&mensagem, strlen(buffer_nome), 0, PUT, buffer_nome);
+    scanf("%s", buffer_nome);
+    init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, PUT, buffer_nome);
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
             perror("Erro ao enviar mensagem no trata_put_cliente");
 
-        switch (recebe_retorno_put(soquete, &mensagem)) {
+        switch (recebe_retorno(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
+                imprime_mensagem(&mensagem);
+                return;
                 put_tamanho_cliente(soquete);
                 break;
 
@@ -130,48 +133,13 @@ void trata_put_cliente (int soquete){
 
             //dá break e re-envia a msg quando volta o laço
             case NACK:
+                printf("vasco");
                 break;
         }
     }
 
     return;
 }
-
-int recebe_retorno_put(int soquete, msg_t *mensagem){
-    while (1) {
-        if (! recebe_mensagem (int soquete, msg_t *mensagem)) 
-            perror("Erro ao receber mensagem no recebe_retorno_put");
-        
-        // Verifica se o marcador de início e a paridade são os corretos
-        if (mensagem->marc_inicio == MARC_INICIO) {
-            //Testa a paridade
-            if (testa_paridade(mensagem)) {
-
-                // Verifica qual mensagem chegou do servidor
-                if (mensagem->tipo == ERRO) 
-                    return ERRO;
-                
-                //se for um NACK, reenvia a mensagem
-                else if (mensagem->tipo == NACK){
-                    //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
-                    if (! manda_mensagem (soquete, mensagem))
-                        perror("Erro ao re-mandar mensagem no recebe_retorno_put");
-                }
-                else if (mensagem->tipo == ACK)
-                    return ACK;
-                else 
-                    return OK;
-            
-            }
-            else
-            //retorna NACK para mensagens com erro no marcador ou na paridade
-                return NACK;
-        }
-        return NACK;
-    }
-
-}
-
 
 // int put_client (int soquete, char *file_name) {
     

@@ -26,7 +26,7 @@ void trata_put_cliente (int soquete);
 int put_client (int soquete, char *file_name);
 
 
-int recebe_retorno_put(int soquete, msg_t *mensagem);
+
 
 
 #endif

@@ -1,4 +1,4 @@
--#include <stdio.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -14,6 +14,7 @@
 
 #define TAM_BUF 100
 
+int sequencia_global = 1;
 
 
 int main(){
@@ -34,7 +35,8 @@ int main(){
         switch (compara_comando(buffer_c)) {
 
             case PUT:
-                trata_put_cliente (int soquete);
+                trata_put_cliente (soquete);
+                break;
             case GET:
                 //envia_mensagem_get
                 if (send(soquete, buffer_c, TAM_BUF, 0) < 0){

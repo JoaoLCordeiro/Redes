@@ -11,7 +11,7 @@
 #include "geral.h"
 #include "servidor_lib.h"
 
-void trata_put_servidor(int soquete, msg_t* mensagem){
+void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
 
     msg_t mensagem;
 
@@ -20,20 +20,26 @@ void trata_put_servidor(int soquete, msg_t* mensagem){
         //return;
 
     //cria um ok
-    init_mensagem(&mensagem, 0, 0, OK, "");
-   
+    //imprime_mensagem(msg_put_inicial);
+    init_mensagem(&mensagem, 0, sequencia_global, OK, "");
+    
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
-        switch (recebe_retorno_put(soquete, &mensagem)) {
+        switch (recebe_retorno(soquete, &mensagem)) {
             //se for TAM, continua
-            case TAM:
-                put_tamanho_server(soquete);
+            case DESC:
+                printf("chegou\n");
+                //put_tamanho_server(soquete);
                 break;
 
             //dá break e re-envia o ok
             case NACK:
+                break;
+
+            default:
+                printf("sincronismo\n");
                 break;
         }
     }
@@ -44,9 +50,8 @@ void trata_put_servidor(int soquete, msg_t* mensagem){
 int recebe_mensagem_server(int soquete, msg_t *mensagem) {
 
     while (1) {
-        if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0) 
-            perror("recv(): Error");
-        
+        recebe_mensagem(soquete, mensagem);
+        imprime_mensagem(mensagem);
         if (mensagem->marc_inicio == MARC_INICIO) {
             if (testa_paridade(mensagem))
                 return mensagem->tipo;
