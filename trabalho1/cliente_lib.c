@@ -13,16 +13,6 @@
 
 
 
-int file_size(FILE *arquivo) {
-
-    fseek(arquivo, 0L, SEEK_END);
-    unsigned int size = ftell(arquivo);
-    fseek(arquivo, 0L, SEEK_SET);
-
-    return size;
-}
-
-
 void put_dados_cliente (int soquete){
     msg_t mensagem;
 
@@ -71,15 +61,19 @@ void put_dados_cliente (int soquete){
     }
 }
 
-void put_tamanho_cliente (int soquete){
+void put_tamanho_cliente (int soquete, char *nome_arquivo){
     msg_t mensagem;
-    
-    int tamanho = 10;
-    //tamanho = tamanho_do_arquivo
 
-    return;
+    FILE *arq = abre_arquivo(nome_arquivo);
+
+
+    int tamanho = tamanho_do_arquivo(arq);
+    char tamanho_string[32];
+
+    sprintf(tamanho_string, "%d", tamanho);
+
     //tipo DESC pois acho que o TAMANHO conta como descrição
-    init_mensagem(&mensagem, sizeof(int), sequencia_global, DESC, &tamanho);
+    init_mensagem(&mensagem, strlen(tamanho_string), sequencia_global, DESC, tamanho_string);
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
@@ -111,6 +105,12 @@ void trata_put_cliente (int soquete){
     //envia_mensagem_put
     printf("Digite o nome do arquivo\n");
     scanf("%s", buffer_nome);
+
+    if (check_permissao_existencia(buffer_nome) < 0) {
+        perror("O Arquivo não existe ou você não possui permissão de leitura");
+        return;
+    }
+
     init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, PUT, buffer_nome);
 
     while (1){
@@ -121,8 +121,7 @@ void trata_put_cliente (int soquete){
             //se for ok, continua
             case OK:
                 imprime_mensagem(&mensagem);
-                return;
-                put_tamanho_cliente(soquete);
+                put_tamanho_cliente(soquete, buffer_nome);
                 break;
 
             //se for erro, vai pegar outro comando

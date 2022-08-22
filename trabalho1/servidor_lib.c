@@ -15,10 +15,14 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
 
     msg_t mensagem;
 
-    //if (! tem_permissao())
-        //envia_erro()
-        //return;
-
+    //verifica permissão do diretório
+    if (tem_permissao() < 0){
+        perror("Você não tem permissão de escrita neste diretório\n");
+        //envia_erro();
+        return;
+    }
+    
+    
     //cria um ok
     //imprime_mensagem(msg_put_inicial);
     init_mensagem(&mensagem, 0, sequencia_global, OK, "");

@@ -31,7 +31,6 @@ int main(){
         printf("Digite o comando\n");
         scanf("%s", buffer_c);
 
-        msg_t mensagem;
         switch (compara_comando(buffer_c)) {
 
             case PUT:

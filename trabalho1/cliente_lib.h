@@ -5,16 +5,22 @@
 
 #include "geral.h"
 
-/**
- * @brief Retorna o tamanho do arquivo.
- * 
- * @param arquivo (_FILE*_) : Ponteiro do descritor do arquivo
- * @return int : tamanho do arquivo
- */
-int file_size (FILE *arquivo);
 
-/***/
+
+/**
+ * @brief Trata do put do cliente para o servidor
+ * 
+ * @param soquete (_int_) : Nº do soquete
+ */
 void trata_put_cliente (int soquete);
+
+/**
+ * @brief 
+ * 
+ * @param soquete 
+ * @param nome_arquivo 
+ */
+void put_tamanho_cliente (int soquete, char *nome_arquivo);
 
 /**
  * @brief Manda um arquivo para o servidor

@@ -2,6 +2,7 @@
 #define __GERAL__
 
 #define TAM_BUFFER_DADOS 64
+#define BUFFER_IMENSO 65536
 
 #define MARC_INICIO 126
 
@@ -111,6 +112,38 @@ void envia_ok(int soquete);
 
 
 int recebe_retorno(int soquete, msg_t *mensagem);
+
+/**
+ * @brief Verifica se o diretório tem permissão.
+ * 
+ * @return int : 0 se tem permissão; < 0 se não tem permissão.
+ */
+int tem_permissao();
+
+/**
+ * @brief Testa para ver se o arquivo existe.
+ * 
+ * @return int : 0 se o arquivo existe, < 0 senão existe.
+ */
+int check_permissao_existencia(char *);
+
+
+/**
+ * @brief Abre o arquivo e retorna o seu tamanho.
+ * 
+ * @param arquivo (_FILE*_) : Descritor do arquivo.
+ * @return int : tamanho do arquivo.
+ */
+int tamanho_do_arquivo(FILE *);
+
+
+/**
+ * @brief Abre o arquivo e retorna seu descritor.
+ * 
+ * @param nome_arquivo (_char*_) : Nome do arquivo.
+ * @return FILE* : descritor do arquivo aberto.
+ */
+FILE *abre_arquivo(char *nome_arquivo);
 
 
 

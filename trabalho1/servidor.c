@@ -21,7 +21,6 @@ int main(){
     int soquete = ConexaoRawSocket("lo");
     // printf ("soquete -> %d\n", soquete);
 
-    char buffer_s[TAM_BUF];
     msg_t mensagem;
     while (1) {
           

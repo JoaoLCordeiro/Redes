@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 //#include <linux/types.h>
@@ -112,7 +113,7 @@ void envia_ok(int soquete) {
 }
 
 int recebe_retorno(int soquete, msg_t *mensagem){
-    printf("OI\n");
+    
     while (1) {
         if (! recebe_mensagem (soquete, mensagem)) 
             perror("Erro ao receber mensagem no recebe_retorno_put");
@@ -140,5 +141,58 @@ int recebe_retorno(int soquete, msg_t *mensagem){
         }
         return NACK;
     }
+
+}
+
+int tem_permissao() {
+
+    char diretorio[BUFFER_IMENSO];
+
+    strcpy(diretorio, "./");
+
+    return access(diretorio, W_OK);
+ 
+}
+
+int check_permissao_existencia(char *nome_arquivo) {
+
+    char arquivo[BUFFER_IMENSO];
+
+    strcpy(arquivo, "./");
+    strcat(arquivo, nome_arquivo);
+
+    if (access(arquivo, F_OK) == 0) {
+        return access(arquivo, R_OK);
+    }
+    else
+        return -1;
+
+}
+
+int tamanho_do_arquivo(FILE * arquivo) {
+    
+    fseek(arquivo, 0L, SEEK_END);
+    unsigned int size = ftell(arquivo);
+    fseek(arquivo, 0L, SEEK_SET);
+
+    return size;
+
+}
+
+FILE *abre_arquivo(char *nome_arquivo) {
+
+
+    char arquivo[BUFFER_IMENSO];
+
+    strcpy(arquivo, "./");
+    strcat(arquivo, nome_arquivo);
+
+    FILE *arq = fopen(arquivo, "r" );
+    if (! arq) {
+        perror("O arquivo não pôde ser aberto");
+        return NULL;
+    }
+
+    return arq;
 
 }
