@@ -13,25 +13,30 @@
 
 
 
-void put_dados_cliente (int soquete){
+void put_dados_cliente (int soquete, FILE * arq){
+
+    printf("put_dados_cliente\n");
+
     msg_t mensagem;
 
     char buffer_arq[TAM_BUFFER_DADOS];
-    //abre o arquivo
-    while (/*AQUIVO NAO ACABOU*/1){
+    
+    while (fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq) != 0){
+        printf("dentro do fread\n");
         //buffer_arq = /*le pedaco do arquivo*/
 
-        init_mensagem(&mensagem, sizeof(buffer_arq), 0, DADOS, buffer_arq);
-
+        init_mensagem(&mensagem, strlen(buffer_arq), sequencia_global, DADOS, buffer_arq);
         int ack = 0;
-
         while (! ack){
+            printf("DENTRO DO WHILE ACK NO PUT DADOS CLIENTE\n");
             if (! manda_mensagem (soquete, &mensagem))
                 perror("Erro ao enviar mensagem no put_dados");
 
             switch (recebe_retorno(soquete, &mensagem)) {
+                
                 //se for ack, quebra o laço interno e vai pro laço externo pegar mais dados
                 case ACK:
+                    printf("RECEBEU ACK\n");
                     ack = 1;
                     break;
 
@@ -43,7 +48,7 @@ void put_dados_cliente (int soquete){
     }
 
     //manda uma mensagem do tipo FIM
-    init_mensagem(&mensagem, 0, 0, FIM, "");
+    init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
 
     //considerando que o servidor responde um FIM com um ACK
     while (1){
@@ -62,9 +67,12 @@ void put_dados_cliente (int soquete){
 }
 
 void put_tamanho_cliente (int soquete, char *nome_arquivo){
+
+    printf("put_tamanho_cliente\n");
+
     msg_t mensagem;
 
-    FILE *arq = abre_arquivo(nome_arquivo);
+    FILE *arq = abre_arquivo(nome_arquivo, "r");
 
 
     int tamanho = tamanho_do_arquivo(arq);
@@ -82,7 +90,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
         switch (recebe_retorno(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
-                put_dados_cliente(soquete);
+                put_dados_cliente(soquete, arq);
                 break;
 
             //se for erro, vai pegar outro comando
@@ -99,6 +107,9 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
 }
 
 void trata_put_cliente (int soquete){
+
+    printf("trata_put_cliente\n");
+
     msg_t mensagem;
     char buffer_nome[TAM_BUFFER_DADOS];
 
@@ -120,7 +131,6 @@ void trata_put_cliente (int soquete){
         switch (recebe_retorno(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
-                imprime_mensagem(&mensagem);
                 put_tamanho_cliente(soquete, buffer_nome);
                 break;
 

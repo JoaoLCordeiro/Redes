@@ -29,12 +29,12 @@ extern int sequencia_global;
 typedef struct msg_t
 {
   
-    int marc_inicio : 8;    //Marcador de início
-    int size_msg : 6;       //Tamanho da mensagem
-    int sequencia : 4;      //Número da mensagem (até 16)
-    int tipo : 6;           //Tipo da mensagem
+    unsigned int marc_inicio : 8;    //Marcador de início
+    unsigned int size_msg : 6;       //Tamanho da mensagem
+    unsigned int sequencia : 4;      //Número da mensagem (até 16)
+    unsigned int tipo : 6;           //Tipo da mensagem
     char dados[64];         //Buffer dos dados
-    int paridade : 8;       //Paridade
+    unsigned int paridade : 8;       //Paridade
 
 } msg_t;
 
@@ -141,9 +141,11 @@ int tamanho_do_arquivo(FILE *);
  * @brief Abre o arquivo e retorna seu descritor.
  * 
  * @param nome_arquivo (_char*_) : Nome do arquivo.
+ * @param modo (_char*_) : Modo como você quer abrir o arquivo.
+ * 
  * @return FILE* : descritor do arquivo aberto.
  */
-FILE *abre_arquivo(char *nome_arquivo);
+FILE *abre_arquivo(char *nome_arquivo, char *modo);
 
 
 

@@ -5,7 +5,13 @@
 
 #include "geral.h"
 
-
+/**
+ * @brief Envia o arquivo para o servidor
+ * 
+ * @param soquete (_int_) : soquete
+ * @param arq (_FILE*_) : Descritor do arquivo
+ */
+void put_dados_cliente (int soquete, FILE * arq);
 
 /**
  * @brief Trata do put do cliente para o servidor

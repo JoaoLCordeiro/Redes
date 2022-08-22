@@ -15,7 +15,14 @@ int manda_mensagem (int soquete, msg_t *mensagem){
     if (send(soquete, mensagem, sizeof(msg_t), 0) < 0)
         return 0;
     
-    sequencia_global++;
+    printf("Manda mensagem:\n");
+    imprime_mensagem(mensagem);
+    printf("\n");
+
+    if (sequencia_global >= 15)
+            sequencia_global = 1;
+        else
+            sequencia_global++;
     return 1;
 }
 
@@ -24,10 +31,17 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
         if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0)
             return 0;
     
-        if (mensagem->sequencia != sequencia_global)
+        if (mensagem->sequencia != sequencia_global) {
             continue;
+        }
 
-        sequencia_global++;
+        printf("Recebe mensagem:\n");
+        imprime_mensagem(mensagem);
+        printf("\n");
+        if (sequencia_global >= 15)
+            sequencia_global = 1;
+        else
+            sequencia_global++;
         return 1;
     }
 }
@@ -131,13 +145,15 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                 }
 
                 // Senão retorna o tipo    
-                else 
+                else {
                     return mensagem->tipo;
+                }
             
             }
-            else
+            else {
             //retorna NACK para mensagens com erro no marcador ou na paridade
                 return NACK;
+            }    
         }
         return NACK;
     }
@@ -179,7 +195,7 @@ int tamanho_do_arquivo(FILE * arquivo) {
 
 }
 
-FILE *abre_arquivo(char *nome_arquivo) {
+FILE *abre_arquivo(char *nome_arquivo, char *modo) {
 
 
     char arquivo[BUFFER_IMENSO];
@@ -187,7 +203,7 @@ FILE *abre_arquivo(char *nome_arquivo) {
     strcpy(arquivo, "./");
     strcat(arquivo, nome_arquivo);
 
-    FILE *arq = fopen(arquivo, "r" );
+    FILE *arq = fopen(arquivo, modo);
     if (! arq) {
         perror("O arquivo não pôde ser aberto");
         return NULL;
