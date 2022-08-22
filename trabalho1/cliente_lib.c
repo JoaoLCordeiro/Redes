@@ -23,12 +23,10 @@ void put_dados_cliente (int soquete, FILE * arq){
     
     while (fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq) != 0){
         printf("dentro do fread\n");
-        //buffer_arq = /*le pedaco do arquivo*/
 
         init_mensagem(&mensagem, strlen(buffer_arq), sequencia_global, DADOS, buffer_arq);
         int ack = 0;
         while (! ack){
-            printf("DENTRO DO WHILE ACK NO PUT DADOS CLIENTE\n");
             if (! manda_mensagem (soquete, &mensagem))
                 perror("Erro ao enviar mensagem no put_dados");
 
@@ -36,7 +34,6 @@ void put_dados_cliente (int soquete, FILE * arq){
                 
                 //se for ack, quebra o laço interno e vai pro laço externo pegar mais dados
                 case ACK:
-                    printf("RECEBEU ACK\n");
                     ack = 1;
                     break;
 
@@ -91,6 +88,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
             //se for ok, continua
             case OK:
                 put_dados_cliente(soquete, arq);
+                return;
                 break;
 
             //se for erro, vai pegar outro comando
@@ -132,6 +130,7 @@ void trata_put_cliente (int soquete){
             //se for ok, continua
             case OK:
                 put_tamanho_cliente(soquete, buffer_nome);
+                return;
                 break;
 
             //se for erro, vai pegar outro comando
@@ -149,41 +148,3 @@ void trata_put_cliente (int soquete){
 
     return;
 }
-
-// int put_client (int soquete, char *file_name) {
-    
-//     if (envia_nome_put (file_name) < 0){
-//         //erro: server n respondeu positivamente
-//         //return ??????
-//     }
-//     //passando daqui, o servidor ja deixou começar a escrever o arquivo
-    
-//     return 0;
-
-//     FILE *arquivo;
-//     char buffer[64];
-    
-//     arquivo = fopen (file_name, "r");
-//     if (! arquivo) {
-//         fprintf(stderr, "put_client() : Não foi possível abrir o arquivo %s\n", file_name);
-//         return -1;
-//     }
-
-//     int tam = file_size(arquivo);
-//     if (envia_tam_put (tam) < 0){
-//         //erro: servern respondeu positivamente
-//         //return ???????
-//     }
-//     //passando daqui, o servidor possui espaço para escrever o arquivo
-
-
-//     int tamanho_lido = fread(buffer, sizeof(char), MAX_SIZE_MSG, arquivo);
-//     while (tamanho_lido == 64) {
-//         //fwrite(buffer, sizeof(char), MAX_SIZE_MSG, arquivo_saida);
-//         tamanho_lido = fread(buffer, sizeof(char), MAX_SIZE_MSG, arquivo);
-//     }
-//     if (tamanho_lido > 0) {
-//         //fwrite(buffer, sizeof(char), tamanho_lido, arquivo_saida);
-//     }
-
-// }

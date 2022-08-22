@@ -13,17 +13,6 @@
  */
 void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq);
 
-
-/**
- * @brief 
- * 
- * @param soquete 
- * @param mensagem 
- * @return int : 2 se der ERRO, 
- */
-int recebe_mensagem_server(int soquete, msg_t *mensagem);
-
-
 /**
  * @brief 
  * 

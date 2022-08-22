@@ -17,6 +17,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
     printf("put_dados_sevidor\n");
 
     char aux[128];
+    //isso serve para criar outro arquivo, APENAS PARA TESTES
     strcpy(aux, "./destino/");
     strcat(aux, nome_arq);
 
@@ -27,7 +28,6 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
     }
 
     msg_t mensagem_ack;
-    
     
     while (1){
         init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
@@ -44,12 +44,13 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
                 break;
 
             case FIM:
+                manda_mensagem (soquete, &mensagem_ack);
                 fclose(arq);
                 return;
                 break;
+
             //dá break e re-envia o ok
             case NACK:
-
                 break;
 
             default:
@@ -63,33 +64,38 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 
 void put_tamanho_server(int soquete, char *nome_arq){
     
+    //REMOVER COMENTARIO
+    //aqui, o servidor deveria testar algo com o tamanho do arquivo, mas nao fizemos
+
     printf("put_tamanho_sevidor\n");
+
+    //cria um ok
     msg_t mensagem;
     
-    init_mensagem(&mensagem, 0, sequencia_global, OK, "");
-    
     while (1){
+        //cria um ok
+        init_mensagem(&mensagem, 0, sequencia_global, OK, "");
+
+        //manda um ok
         if (! manda_mensagem (soquete, &mensagem))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, &mensagem)) {
-            //se for TAM, continua
+            //se for DADOS, continua
             case DADOS:
                 put_dados_server(soquete, &mensagem, nome_arq);
+
+                //voltou da dados_server, agora dai dessa funcao
                 return;
                 break;
 
             //dá break e re-envia o ok
             case NACK:
                 break;
-
-            default:
-                break;
         }
     }
 
     return;
-
 }
 
 
@@ -98,8 +104,9 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
     printf("trata_put_sevidor\n");
 
     msg_t mensagem;
+    
+    //coloca o nome do arquivo q está em msg_put_inicial no nome_arquivo
     char nome_arquivo[BUFFER_IMENSO];
-
     strcpy(nome_arquivo, msg_put_inicial->dados);
 
     //verifica permissão do diretório
@@ -109,46 +116,29 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
         return;
     }
     
-    
-    //cria um ok
-    //imprime_mensagem(msg_put_inicial);
-    init_mensagem(&mensagem, 0, sequencia_global, OK, "");
-    
     while (1){
+        //cria um ok
+        init_mensagem(&mensagem, 0, sequencia_global, OK, "");
+
+        //manda um ok
         if (! manda_mensagem (soquete, &mensagem))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, &mensagem)) {
-            //se for TAM, continua
+            //se for o tamanho da mensagem, continua
             case DESC:
                 put_tamanho_server(soquete, nome_arquivo);
+
+                //voltou da função do tamanho, sai dessa funcao
                 return;
                 break;
 
             //dá break e re-envia o ok
             case NACK:
                 break;
-
-            default:
-                printf("sincronismo\n");
-                break;
         }
     }
 
+    //sai da funcao
     return;
-}
-
-int recebe_mensagem_server(int soquete, msg_t *mensagem) {
-
-    while (1) {
-        recebe_mensagem(soquete, mensagem);
-        if (mensagem->marc_inicio == MARC_INICIO) {
-            if (testa_paridade(mensagem))
-                return mensagem->tipo;
-            else
-                return NACK;
-        }
-        return NACK;
-    }
-
 }

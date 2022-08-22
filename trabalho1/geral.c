@@ -15,6 +15,7 @@ int manda_mensagem (int soquete, msg_t *mensagem){
     if (send(soquete, mensagem, sizeof(msg_t), 0) < 0)
         return 0;
     
+    //print do manda mensagem
     printf("Manda mensagem:\n");
     imprime_mensagem(mensagem);
     printf("\n");
@@ -35,9 +36,11 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
             continue;
         }
 
+        //print do recebe mensagem
         printf("Recebe mensagem:\n");
         imprime_mensagem(mensagem);
         printf("\n");
+
         if (sequencia_global >= 15)
             sequencia_global = 1;
         else
@@ -130,7 +133,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
     
     while (1) {
         if (! recebe_mensagem (soquete, mensagem)) 
-            perror("Erro ao receber mensagem no recebe_retorno_put");
+            perror("Erro ao receber mensagem no recebe_retorno");
         
         // Verifica se o marcador de início e a paridade são os corretos
         if (mensagem->marc_inicio == MARC_INICIO) {
@@ -174,10 +177,13 @@ int check_permissao_existencia(char *nome_arquivo) {
 
     char arquivo[BUFFER_IMENSO];
 
+    //coloca a string que representa o arquivo em um ./
     strcpy(arquivo, "./");
     strcat(arquivo, nome_arquivo);
 
+    //testa se o arquivo existe
     if (access(arquivo, F_OK) == 0) {
+        //se existe, retorna se pode ser lido
         return access(arquivo, R_OK);
     }
     else
@@ -197,18 +203,21 @@ int tamanho_do_arquivo(FILE * arquivo) {
 
 FILE *abre_arquivo(char *nome_arquivo, char *modo) {
 
-
     char arquivo[BUFFER_IMENSO];
 
     strcpy(arquivo, "./");
     strcat(arquivo, nome_arquivo);
 
+    //abre o arquivo dado com o modo dado
     FILE *arq = fopen(arquivo, modo);
+
+    //retorna null se nao foi bem sucedido
     if (! arq) {
         perror("O arquivo não pôde ser aberto");
         return NULL;
     }
 
+    //retorna o arquivo
     return arq;
 
 }
