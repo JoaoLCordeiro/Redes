@@ -20,11 +20,11 @@ void put_dados_cliente (int soquete, FILE * arq){
     msg_t mensagem;
 
     char buffer_arq[TAM_BUFFER_DADOS];
+    int bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq);
     
-    while (fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq) != 0){
-        printf("dentro do fread\n");
+    while (bytes_lidos != 0){
 
-        init_mensagem(&mensagem, strlen(buffer_arq), sequencia_global, DADOS, buffer_arq);
+        init_mensagem(&mensagem, bytes_lidos, sequencia_global, DADOS, buffer_arq);
         int ack = 0;
         while (! ack){
             if (! manda_mensagem (soquete, &mensagem))
@@ -42,6 +42,8 @@ void put_dados_cliente (int soquete, FILE * arq){
                     break;
             }
         }
+        memset(buffer_arq, 0, TAM_BUFFER_DADOS);
+        bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq);
     }
 
     //manda uma mensagem do tipo FIM
@@ -55,6 +57,7 @@ void put_dados_cliente (int soquete, FILE * arq){
         switch (recebe_retorno(soquete, &mensagem)) {
             //se for ack, acaba
             case ACK:
+                printf("put_dados_cliente: recebeu um ack do server, retornando...\n");
                 return;
             //dá break e re-envia a msg quando volta o laço
             case NACK:
@@ -69,7 +72,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
 
     msg_t mensagem;
 
-    FILE *arq = abre_arquivo(nome_arquivo, "r");
+    FILE *arq = abre_arquivo(nome_arquivo, "rb");
 
 
     int tamanho = tamanho_do_arquivo(arq);
@@ -88,6 +91,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
             //se for ok, continua
             case OK:
                 put_dados_cliente(soquete, arq);
+                printf("put_tamanho_cliente: retornando...\n");
                 return;
                 break;
 
@@ -130,6 +134,7 @@ void trata_put_cliente (int soquete){
             //se for ok, continua
             case OK:
                 put_tamanho_cliente(soquete, buffer_nome);
+                printf("trata_put_cliente: retornando...\n");
                 return;
                 break;
 

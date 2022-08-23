@@ -30,5 +30,12 @@ void put_tamanho_server(int soquete, char *nome_arq);
  */
 void trata_put_servidor(int soquete, msg_t* mensagem);
 
-
+/**
+ * @brief 
+ * 
+ * @param soquete 
+ * @param mensagem 
+ * @return int | 2 se der ERRO,  
+ */
+int recebe_mensagem_server(int soquete, msg_t *mensagem);
 #endif

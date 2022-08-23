@@ -21,13 +21,14 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
     strcpy(aux, "./destino/");
     strcat(aux, nome_arq);
 
-    FILE * arq = abre_arquivo(aux, "w+");
-    if (fwrite(mensagem->dados, sizeof(char), mensagem->size_msg-1, arq) != mensagem->size_msg-1){
+    FILE * arq = abre_arquivo(aux, "wb+");
+    if (fwrite(mensagem->dados, sizeof(char), mensagem->size_msg, arq) != mensagem->size_msg){
         perror("put_server(): Escreveu tamanho errado no servidor");
         return;
     }
 
     msg_t mensagem_ack;
+    int conta_mensagens = 1;
     
     while (1){
         init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
@@ -37,15 +38,18 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
         switch (recebe_retorno(soquete, mensagem)) {
             //se for TAM, continua
             case DADOS:
-                if (fwrite(mensagem->dados, sizeof(char), mensagem->size_msg-1, arq) != mensagem->size_msg-1){
+                conta_mensagens++;
+                if (fwrite(mensagem->dados, sizeof(char), mensagem->size_msg, arq) != mensagem->size_msg){
                     perror("put_server(): Escrever tamanho errado no servidor");
                     return;
                 }           
                 break;
 
             case FIM:
+                init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
                 manda_mensagem (soquete, &mensagem_ack);
                 fclose(arq);
+                printf("%d\n", conta_mensagens);
                 return;
                 break;
 
@@ -141,4 +145,18 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
 
     //sai da funcao
     return;
+}
+
+int recebe_mensagem_server(int soquete, msg_t *mensagem) {
+
+    while (1) {
+        recebe_mensagem(soquete, mensagem);
+        if (mensagem->marc_inicio == MARC_INICIO) {
+            if (testa_paridade(mensagem))
+                return mensagem->tipo;
+            else
+                return NACK;
+        }
+        return NACK;
+    }
 }

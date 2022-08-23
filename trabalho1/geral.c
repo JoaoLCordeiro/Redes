@@ -17,7 +17,7 @@ int manda_mensagem (int soquete, msg_t *mensagem){
     
     //print do manda mensagem
     printf("Manda mensagem:\n");
-    imprime_mensagem(mensagem);
+   // imprime_mensagem(mensagem);
     printf("\n");
 
     if (sequencia_global >= 15)
@@ -38,7 +38,7 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
 
         //print do recebe mensagem
         printf("Recebe mensagem:\n");
-        imprime_mensagem(mensagem);
+        //imprime_mensagem(mensagem);
         printf("\n");
 
         if (sequencia_global >= 15)
