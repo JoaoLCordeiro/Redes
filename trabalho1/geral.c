@@ -16,9 +16,9 @@ int manda_mensagem (int soquete, msg_t *mensagem){
         return 0;
     
     //print do manda mensagem
-    printf("Manda mensagem:\n");
+    //printf("Manda mensagem:\n");
    // imprime_mensagem(mensagem);
-    printf("\n");
+    //printf("\n");
 
     if (sequencia_global >= 15)
             sequencia_global = 1;
@@ -37,9 +37,9 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
         }
 
         //print do recebe mensagem
-        printf("Recebe mensagem:\n");
+        //printf("Recebe mensagem:\n");
         //imprime_mensagem(mensagem);
-        printf("\n");
+        //printf("\n");
 
         if (sequencia_global >= 15)
             sequencia_global = 1;
@@ -51,7 +51,7 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
 
 char calcula_paridade (int tamanho, char * dados){
     
-    char aux = dados[0];
+    unsigned char aux = dados[0];
     for (int i = 1; i < tamanho; i++)
         aux = aux ^ dados[i];
     
@@ -60,10 +60,10 @@ char calcula_paridade (int tamanho, char * dados){
 
 int testa_paridade(msg_t*mensagem) {
 
-    int paridade = calcula_paridade(mensagem->size_msg, mensagem->dados);
-    if (paridade == mensagem->paridade)
+    int paridade = (int)calcula_paridade(mensagem->size_msg, mensagem->dados);
+    if (mensagem->paridade - paridade == 256 || paridade == mensagem->paridade)
         return 1;
-    
+    printf("PARIDADE CALCULADA %d ----- PARIDADE DA MENSAGEM %d\n", paridade, mensagem->paridade);    
     return 0;
 
 }
@@ -115,7 +115,7 @@ void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensage
     mensagem->sequencia = sequencia;
     mensagem->tipo = tipo_mensagem;
     init_dados(tamanho, mensagem->dados, dados);
-    mensagem->paridade = (int)calcula_paridade(mensagem->size_msg, mensagem->dados);
+    mensagem->paridade = (unsigned int)calcula_paridade(mensagem->size_msg, mensagem->dados);
 }
 
 void envia_ok(int soquete) {
@@ -158,6 +158,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                 return NACK;
             }    
         }
+        printf("MARCADOR DE INÍCIO DEU RUIM\n");
         return NACK;
     }
 

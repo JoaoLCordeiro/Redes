@@ -15,6 +15,7 @@
 
 void put_dados_cliente (int soquete, FILE * arq){
 
+    int contador = 1;
     printf("put_dados_cliente\n");
 
     msg_t mensagem;
@@ -24,6 +25,7 @@ void put_dados_cliente (int soquete, FILE * arq){
     
     while (bytes_lidos != 0){
 
+        contador++;
         init_mensagem(&mensagem, bytes_lidos, sequencia_global, DADOS, buffer_arq);
         int ack = 0;
         while (! ack){
@@ -58,6 +60,7 @@ void put_dados_cliente (int soquete, FILE * arq){
             //se for ack, acaba
             case ACK:
                 printf("put_dados_cliente: recebeu um ack do server, retornando...\n");
+                printf("Contador -> %d\n", contador);
                 return;
             //dá break e re-envia a msg quando volta o laço
             case NACK:
