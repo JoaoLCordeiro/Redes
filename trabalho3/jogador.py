@@ -1,4 +1,5 @@
 import random
+import os
 import socket
 import pickle
 import copy
@@ -148,8 +149,9 @@ def joga_dados(msg):
 
     # Joga os dados (i.e. escolhe aleatoriamente entre 1 a 6 cinco vezes)
     for i in range(0, 5):
+        sleep(0.8)
         numero = random.randint(1, 6)
-        print(f"[{numero}]", end=" ")
+        print(f"[{numero}]", end=" ", flush=True)
         msg.dados.append(numero)
 
     # pula linha
@@ -158,7 +160,7 @@ def joga_dados(msg):
     # faz uma vetor que guarda se aquele dado já foi travado
     travados = list([False, False, False, False, False])
 
-    resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n> ")
+    resposta = input("Você quer jogar novamente? 'Y' para sim, 'N' para não\n> ")
     contador = 1
     
     # Se o jogador digitou sim e o contador é menor que 2
@@ -178,11 +180,12 @@ def joga_dados(msg):
 
         print("Resultado: ", end="\n")
         for i in range(0, 5):
-            print(f"[{msg.dados[i]}]", end=" ")
+            sleep(0.8)
+            print(f"[{msg.dados[i]}]", end=" ", flush = True)
         print()
 
         if contador != 2:
-            resposta = input("Você quer travar algum dos dados? 'Y' para sim, 'N' para não\n> ")
+            resposta = input("Você quer jogar novamente? 'Y' para sim, 'N' para não\n> ")
         contador += 1
 
     global FICHAS
@@ -286,8 +289,10 @@ if __name__ == "__main__":
         BASTAO = True
 
     while (True):
-
+        os.system('clear')
+        print(f"Seu saldo é -> {FICHAS}")
         if BASTAO:
+
             mensagem = lib_m.mensagem_combinacao(1,jogador, valor_combinacao)
 
             # Manda a mensagem de combinação inicial da rodada
@@ -363,5 +368,6 @@ if __name__ == "__main__":
                 BASTAO = True
             
             envia_mensagem(mensagem)
+        sleep(0.8)
 
 

@@ -46,7 +46,7 @@ def mensagem_aumenta_aposta(msg, jogador_atual, valor_combinacao):
     if resposta.upper() == "Y":
         
         # Usuário escolhe quanto quer aumentar na aposta
-        resposta = int(input("Quanto você quer aumentar a aposta ?\n> "))
+        resposta = int(input("Em quanto você quer aumentar a aposta ?\n> "))
         while resposta <= 0:
             resposta = int(input("A aposta não pode ser menor que 1\n"))
         
