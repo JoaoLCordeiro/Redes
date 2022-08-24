@@ -15,8 +15,6 @@ UDP_PORT_IN = None
 UDP_PORT_OUT = None
 FICHAS = 10
 
-
-
 valor_combinacao = {
     1: (2, 1, 'Dupla')
     ,2: (3, 2, 'Trio')

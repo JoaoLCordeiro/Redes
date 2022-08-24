@@ -4,7 +4,7 @@ import copy
 
 def calcula_paridade(msg):
 
-    #zera a paridade da mensagem ja que o calculo é fieto com ela zerada
+    #zera a paridade da mensagem ja que o calculo é feito com ela zerada
     msg_aux = copy.copy(msg)
     msg_aux.paridade = 0    
 
