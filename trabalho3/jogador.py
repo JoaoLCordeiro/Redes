@@ -14,15 +14,25 @@ UDP_PORT_IN = None
 UDP_PORT_OUT = None
 FICHAS = 10
 
+
+
 valor_combinacao = {
-    1: (2, 'dupla')
-    ,2: (3, 'trio')
-    ,3: (4, 'd_dupla')
-    ,4: (5, 'full_house')
-    ,5: (7, 'seq_alta')
-    ,6: (7, 'seq_baixa')
-    ,7: (10, 'quadra')
-    ,8: (15, 'quinteto')
+    1: (2, 1, 'Dupla')
+    ,2: (3, 2, 'Trio')
+    ,3: (4, 3, 'Duas Duplas')
+    ,4: (5, 4, 'Full House')
+    ,5: (7, 5, 'Sequência Alta')
+    ,6: (7, 6, 'Sequência Baixa')
+    ,7: (10, 7, 'Quadra')
+    ,8: (15, 8, 'Quinteto')    
+    ,'dupla': (2, 1)
+    ,'trio': (3, 2)
+    ,'d_dupla': (4, 3)
+    ,'full_house': (5, 4)
+    ,'seq_alta': (7, 5)
+    ,'seq_baixa': (7, 6)
+    ,'quadra': (10, 7)
+    ,'quinteto': (15, 8)
 }
 
 portas = {
@@ -44,32 +54,32 @@ def resultado(combinacao, dados):
         _int_: Valor da jogada
     """
 
-    aposta = valor_combinacao[int(combinacao)]
-    if aposta[1] == 'dupla':
+    aposta = valor_combinacao[combinacao]
+    if combinacao == 1:
         for dado in dados:
-            if dados.count(dado) == 2:
+            if dados.count(dado) >= 2:
                 return aposta[0]
         return 0
 
-    if aposta[1] == 'trio':
+    if combinacao == 2:
         for dado in dados:
-            if dados.count(dado) == 3:
+            if dados.count(dado) >= 3:
                 return aposta[0]
         return 0
 
-    if aposta[1] == 'd_dupla':
+    if combinacao == 3:
 
         contador = 0
         l_valores_dados = list([1,2,3,4,5,6])
 
         for valor_dado in l_valores_dados:
-            if dados.count(valor_dado) == 2:
+            if dados.count(valor_dado) >= 2:
                   contador += 1
                   if contador == 2:
                     return aposta[0]
         return 0
 
-    if aposta[1] == 'full_house':
+    if combinacao == 4:
 
         contador = 0
         l_valores_dados = list([1,2,3,4,5,6])
@@ -84,7 +94,7 @@ def resultado(combinacao, dados):
                 return aposta[0]
         return 0
 
-    if aposta[1] == 'seq_alta':
+    if combinacao == 5:
 
         contador = 0
         l_valores_dados = list([2,3,4,5,6])
@@ -96,7 +106,7 @@ def resultado(combinacao, dados):
             return aposta[0]
         return 0
 
-    if aposta[1] == 'seq_baixa':
+    if combinacao == 6:
 
         contador = 0
         l_valores_dados = list([1,2,3,4,5])
@@ -108,13 +118,13 @@ def resultado(combinacao, dados):
             return aposta[0]
         return 0
 
-    if aposta[1] == 'quadra':
+    if combinacao == 7:
         for dado in dados:
-            if dados.count(dado) == 4:
+            if dados.count(dado) >= 4:
                 return aposta[0]
         return 0
 
-    if aposta[1] == 'quinteto':
+    if combinacao == 8:
         for dado in dados:
             if dados.count(dado) == 5:
                 return aposta[0]
@@ -133,6 +143,7 @@ def joga_dados(msg):
     print("Você vai jogar!!!", end="\n")
     sleep(1)
     print("Rodando os dados ...", end='\n')
+    sleep(1.5)
     print("Resultado:", end=" ")
 
     # Joga os dados (i.e. escolhe aleatoriamente entre 1 a 6 cinco vezes)
@@ -240,7 +251,7 @@ def termina_jogo(flag):
 
 def imprime_saldo(mensagem):
     print("")
-    print(f"O jogador {mensagem.jogador} apostou na combinação {mensagem.combinacao} e sua jogada foi {mensagem.dados}", end="\n")
+    print(f"O jogador {mensagem.jogador} apostou na combinação {valor_combinacao[mensagem.combinacao][2]} e sua jogada foi {mensagem.dados}", end="\n")
     print(f"Ele está com o saldo {mensagem.saldo}.", end="\n")
     print("\nEsta rodada acabou, próxima rodada...\n\n")
 
@@ -277,7 +288,7 @@ if __name__ == "__main__":
     while (True):
 
         if BASTAO:
-            mensagem = lib_m.mensagem_combinacao(1,jogador)
+            mensagem = lib_m.mensagem_combinacao(1,jogador, valor_combinacao)
 
             # Manda a mensagem de combinação inicial da rodada
             # e recebe a mensagem com a maior aposta e seu jogador
@@ -323,7 +334,7 @@ if __name__ == "__main__":
                 mensagem = recebe_mensagem()
 
             # Enviando a mensagem da aposta atual mais o jogador
-            mensagem = lib_m.mensagem_aumenta_aposta(mensagem, jogador)
+            mensagem = lib_m.mensagem_aumenta_aposta(mensagem, jogador, valor_combinacao)
             envia_mensagem(mensagem)
             
             # Recebe a mensagem contendo o jogador que jogará

@@ -16,12 +16,18 @@ def calcula_paridade(msg):
     return aux
 
 
-def mensagem_combinacao(saldo, jogador):
+def mensagem_combinacao(saldo, jogador, valor_combinacao):
+    
+    chaves = valor_combinacao.keys()
+    
     combinacao = input("Escolha a combinação?\n> ")
+    while (not combinacao in chaves):
+        combinacao = input("Escolha a combinação?\n> ")
+
     
     mensagem = Mensagem()
     
-    mensagem.combinacao = combinacao
+    mensagem.combinacao = valor_combinacao[combinacao][1]
     mensagem.saldo = saldo
     mensagem.jogador = jogador
     
@@ -29,12 +35,12 @@ def mensagem_combinacao(saldo, jogador):
     
     return mensagem
 
-def mensagem_aumenta_aposta(msg, jogador_atual):
+def mensagem_aumenta_aposta(msg, jogador_atual, valor_combinacao):
 
     mensagem_nova = Mensagem()
     
     print("A aposta atua é a seguinte:", end="\n")
-    print(f"O jogador {msg.jogador} está apostando {msg.saldo} ficha(s) na combinação : {msg.combinacao}", end='\n')
+    print(f"O jogador {msg.jogador} está apostando {msg.saldo} ficha(s) na combinação : {valor_combinacao[msg.combinacao][2]}", end='\n')
     resposta = input("Quer aumentar a aposta ? 'Y' para sim e 'N' para não\n> ")
     
     if resposta.upper() == "Y":
