@@ -34,6 +34,8 @@ int main(){
         case GET:
             trata_get_servidor(soquete, &mensagem);
             break;
+        case MKDIR:
+            break; 
         case NACK:
             //envia_nack()
             

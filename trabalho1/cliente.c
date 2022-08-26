@@ -40,10 +40,7 @@ int main(){
                 trata_get_cliente(soquete);
                 break; 
             case MKDIR:
-                //envia_mensagem_mkdir
-                if (send(soquete, buffer_c, TAM_BUF, 0) < 0){
-                    perror("send(): Error");
-                }
+                trata_mkdir_cliente(soquete);
                 break;
             case LS:
                 //envia_mensagem_ls

@@ -161,8 +161,6 @@ void trata_put_cliente (int soquete){
 /**************************************FIM PUT**************************************************/
 
 /***************************************GET*****************************************************/
-
-
 void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
 
 
@@ -305,5 +303,51 @@ void trata_get_cliente(int soquete){
     }
 
     return;
+
+}
+/*****************************************FIM GET**********************************************/
+
+/*****************************************MKDIR************************************************/
+void trata_mkdir_cliente(int soquete){
+
+    printf("trata_mkdir_cliente\n");
+
+    msg_t mensagem;
+    char buffer_nome[TAM_BUFFER_DADOS];
+
+    //envia_mensagem_put
+    printf("Digite o nome do diretório que você quer criar no servidor\n");
+    scanf("%s", buffer_nome);
+
+    init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, MKDIR, buffer_nome);
+
+    while (1){
+        if (! manda_mensagem (soquete, &mensagem))
+            perror("Erro ao enviar mensagem no trata_put_cliente");
+
+        /*Recebe uma mensagem com o tamanho do arquivo*/
+        switch (recebe_retorno(soquete, &mensagem)) {
+            
+            //se for ok, continua
+            case OK:
+                printf("Diretório criado com sucesso\n");
+                return;
+                break;
+
+            //se for erro, vai pegar outro comando
+            case ERRO:
+                printf("O diretório não foi criado\n");
+                return;
+                break;
+
+            //dá break e re-envia a msg quando volta o laço
+            case NACK:
+                //manda mensagem novamente
+                break;
+        }
+    }
+
+    return;
+
 
 }
