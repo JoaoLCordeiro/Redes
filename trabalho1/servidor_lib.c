@@ -11,7 +11,7 @@
 #include "geral.h"
 #include "servidor_lib.h"
 
-
+/******************************************PUT**************************************************/
 void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 
     printf("put_dados_sevidor\n");
@@ -147,6 +147,7 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
     return;
 }
 
+
 int recebe_mensagem_server(int soquete, msg_t *mensagem) {
 
     while (1) {
@@ -159,4 +160,122 @@ int recebe_mensagem_server(int soquete, msg_t *mensagem) {
         }
         return NACK;
     }
+}
+/****************************************FIM PUT************************************************/
+
+
+void get_dados_server(int soquete, FILE *arq_server){
+
+    int contador = 1;
+    printf("get_dados_server\n");
+
+    msg_t mensagem;
+
+    char buffer_arq[TAM_BUFFER_DADOS];
+    int bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq_server);
+    
+    while (bytes_lidos != 0){
+
+        contador++;
+        init_mensagem(&mensagem, bytes_lidos, sequencia_global, DADOS, buffer_arq);
+        int ack = 0;
+        while (! ack){
+            if (! manda_mensagem (soquete, &mensagem))
+                perror("Erro ao enviar mensagem no put_dados");
+
+            switch (recebe_retorno(soquete, &mensagem)) {
+                
+                //se for ack, quebra o laço interno e vai pro laço externo pegar mais dados
+                case ACK:
+                    ack = 1;
+                    break;
+
+                //dá break e re-envia a msg quando volta o laço
+                case NACK:
+                    break;
+            }
+        }
+        memset(buffer_arq, 0, TAM_BUFFER_DADOS);
+        bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq_server);
+    }
+
+    //manda uma mensagem do tipo FIM
+    init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
+
+    //considerando que o cliente responde um FIM com um ACK
+    while (1){
+        if (! manda_mensagem (soquete, &mensagem))
+            perror("Erro ao enviar mensagem no put_dados");
+
+        switch (recebe_retorno(soquete, &mensagem)) {
+            //se for ack, acaba
+            case ACK:
+                printf("get_dados_server: recebeu um ack do cliente, retornando...\n");
+                printf("Contador -> %d\n", contador);
+                return;
+            //dá break e re-envia a msg quando volta o laço
+            case NACK:
+                break;
+        }
+    }
+
+
+}
+
+
+void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
+
+    printf("trata_get_sevidor\n");
+
+    msg_t mensagem;
+    
+    //coloca o nome do arquivo q está em msg_put_inicial no nome_arquivo
+    char nome_arquivo[BUFFER_IMENSO];
+    strcpy(nome_arquivo, msg_get_inicial->dados);
+
+    //verifica se o arquivo existe e se pode lê-lo
+    if (check_permissao_existencia(nome_arquivo) < 0){
+        //Voltar uma mensagem de erro
+        perror("O Arquivo não existe ou você não possui permissão de leitura");
+        return;
+    }
+
+    //Abre o arquivo, pega o seu tamanho, transforma o tamanho em uma string 
+    FILE *arq_server = abre_arquivo(nome_arquivo, "rb");
+    int tamanho = tamanho_do_arquivo(arq_server);
+    char tamanho_string[TAM_BUFFER_DADOS - 1];
+    sprintf(tamanho_string, "%d", tamanho);
+    
+    while (1){
+        //cria uma mensagem com o tamanho
+        init_mensagem(&mensagem, strlen(tamanho_string), sequencia_global, DESC, tamanho_string);
+
+        //manda uma mensagem com o tamanho
+        if (! manda_mensagem (soquete, &mensagem))
+            perror("Erro ao enviar mensagem no trata_get_servidor");
+
+        // Recebe um ok ou erro do cliente [get_tamanho_cliente]
+        switch (recebe_retorno(soquete, &mensagem)) {
+
+            //se for o tamanho da mensagem, continua
+            case OK:
+                get_dados_server(soquete, arq_server);
+                fclose(arq_server);
+                //voltou da função dos dados, sai dessa funcao
+                return;
+            break;
+
+            case ERRO:
+                return;
+            break;
+
+            //dá break e re-envia o tamanho
+            case NACK:
+            break;
+        }
+    }
+
+    //sai da funcao
+    return;
+
 }

@@ -34,14 +34,11 @@ int main(){
         switch (compara_comando(buffer_c)) {
 
             case PUT:
-                trata_put_cliente (soquete);
+                trata_put_cliente(soquete);
                 break;
             case GET:
-                //envia_mensagem_get
-                if (send(soquete, buffer_c, TAM_BUF, 0) < 0){
-                    perror("send(): Error");
-                }
-                break;
+                trata_get_cliente(soquete);
+                break; 
             case MKDIR:
                 //envia_mensagem_mkdir
                 if (send(soquete, buffer_c, TAM_BUF, 0) < 0){

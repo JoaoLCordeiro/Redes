@@ -38,4 +38,14 @@ void trata_put_servidor(int soquete, msg_t* mensagem);
  * @return int | 2 se der ERRO,  
  */
 int recebe_mensagem_server(int soquete, msg_t *mensagem);
+
+
+/**
+ * @brief Se o servidor recebeu um get,
+ * trata esse get.
+ * 
+ * @param soquete  (_int_) : soquete
+ * @param msg_get_inicial (msg_t*) : Mensagem com o nome do arquivo requerido
+ */
+void trata_get_servidor(int soquete, msg_t* msg_get_inicial);
 #endif

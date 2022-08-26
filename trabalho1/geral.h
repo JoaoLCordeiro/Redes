@@ -148,5 +148,6 @@ int tamanho_do_arquivo(FILE *);
 FILE *abre_arquivo(char *nome_arquivo, char *modo);
 
 
+FILE *pega_transforma_tam_arq(unsigned char *buffer_tamanho, char *nome_arquivo);
 
 #endif

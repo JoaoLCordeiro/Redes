@@ -5,6 +5,8 @@
 
 #include "geral.h"
 
+/******************************************GET*************************************************/
+
 /**
  * @brief Envia o arquivo para o servidor
  * 
@@ -28,15 +30,14 @@ void trata_put_cliente (int soquete);
  */
 void put_tamanho_cliente (int soquete, char *nome_arquivo);
 
-/**
- * @brief Manda um arquivo para o servidor
- * 
- * @param soquete (int) : Número do soquete;
- * @param file_name (_char*_) : Nome do arquivo;
- * @return int : 1 se deu certo. < 0 se deu algum erro.
- */
-int put_client (int soquete, char *file_name);
+/**************************************FIM GET*************************************************/
 
+/**
+ * @brief Trata do get do cliente para o servidor
+ *  
+ * @param soquete (_int_) : Soquete
+ */
+void trata_get_cliente(int soquete);
 
 
 

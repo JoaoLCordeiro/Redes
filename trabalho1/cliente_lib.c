@@ -12,7 +12,7 @@
 #include "cliente_lib.h"
 
 
-
+/******************************************PUT**************************************************/
 void put_dados_cliente (int soquete, FILE * arq){
 
     int contador = 1;
@@ -69,6 +69,7 @@ void put_dados_cliente (int soquete, FILE * arq){
     }
 }
 
+
 void put_tamanho_cliente (int soquete, char *nome_arquivo){
 
     printf("put_tamanho_cliente\n");
@@ -110,6 +111,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
         }
     }
 }
+
 
 void trata_put_cliente (int soquete){
 
@@ -155,4 +157,153 @@ void trata_put_cliente (int soquete){
     }
 
     return;
+}
+/**************************************FIM PUT**************************************************/
+
+/***************************************GET*****************************************************/
+
+
+void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
+
+
+    printf("get_dados_cliente\n");
+
+    char aux[128];
+    //isso serve para criar outro arquivo, APENAS PARA TESTES
+    strcpy(aux, "./destino_cliente/");
+    strcat(aux, nome_arquivo);
+
+    FILE * arq = abre_arquivo(aux, "wb+");
+    if (fwrite(mensagem->dados, sizeof(char), mensagem->size_msg, arq) != mensagem->size_msg){
+        perror("get_dados_cliente(): Escreveu tamanho errado no cliente");
+        return;
+    }
+
+    msg_t mensagem_ack;
+    int conta_mensagens = 1;
+    
+    while (1){
+        init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
+        if (! manda_mensagem (soquete, &mensagem_ack))
+            perror("Erro ao enviar mensagem no trata_put_servidor");
+
+        switch (recebe_retorno(soquete, mensagem)) {
+            //se for TAM, continua
+            case DADOS:
+                conta_mensagens++;
+                if (fwrite(mensagem->dados, sizeof(char), mensagem->size_msg, arq) != mensagem->size_msg){
+                    perror("put_server(): Escrever tamanho errado no servidor");
+                    return;
+                }           
+                break;
+
+            case FIM:
+                init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
+                manda_mensagem (soquete, &mensagem_ack);
+                fclose(arq);
+                printf("%d\n", conta_mensagens);
+                return;
+                break;
+
+            //dá break e re-envia o ok
+            case NACK:
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+}
+
+
+void get_tamanho_cliente(int soquete, char *nome_arquivo, msg_t *msg_tam_server){
+
+
+    //REMOVER COMENTARIO
+    //aqui, o cliente deveria testar algo com o tamanho do arquivo, mas nao fizemos
+
+    printf("get_tamanho_cliente\n");
+
+    //cria um ok
+    msg_t mensagem;
+    
+    while (1){
+        //cria um ok
+        init_mensagem(&mensagem, 0, sequencia_global, OK, "");
+
+        //manda um ok
+        if (! manda_mensagem (soquete, &mensagem))
+            perror("Erro ao enviar mensagem no trata_put_servidor");
+
+        //Essa mensagem possui os primeiros bytes da mensagem
+        switch (recebe_retorno(soquete, &mensagem)) {
+
+            //recebeu os primeiros bytes do arquivo do servidor [get_dados_server]
+            case DADOS:
+                get_dados_cliente(soquete, &mensagem, nome_arquivo);
+
+                //voltou da dados_server, agora dai dessa funcao
+                return;
+                break;
+
+            case ERRO:
+                return;
+                break;
+            //dá break e re-envia o ok
+            case NACK:
+                break;
+        }
+    }
+
+    return;
+
+
+}
+
+
+void trata_get_cliente(int soquete){
+
+
+    printf("trata_get_cliente\n");
+
+    msg_t mensagem;
+    char buffer_nome[TAM_BUFFER_DADOS];
+
+    //envia_mensagem_put
+    printf("Digite o nome do arquivo\n");
+    scanf("%s", buffer_nome);
+
+    init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, GET, buffer_nome);
+
+    while (1){
+        if (! manda_mensagem (soquete, &mensagem))
+            perror("Erro ao enviar mensagem no trata_put_cliente");
+
+        /*Recebe uma mensagem com o tamanho do arquivo*/
+        switch (recebe_retorno(soquete, &mensagem)) {
+            
+            //se for ok, continua
+            case DESC:
+                get_tamanho_cliente(soquete, buffer_nome, &mensagem);
+                printf("trata_GET_cliente: retornando...\n");
+                return;
+                break;
+
+            //se for erro, vai pegar outro comando
+            case ERRO:
+                printf("Erro no comando GET: arquivo não permitido\n");
+                return;
+                break;
+
+            //dá break e re-envia a msg quando volta o laço
+            case NACK:
+                printf("vasco");
+                break;
+        }
+    }
+
+    return;
+
 }

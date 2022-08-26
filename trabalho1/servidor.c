@@ -31,6 +31,9 @@ int main(){
             trata_put_servidor(soquete, &mensagem);
             break;
         
+        case GET:
+            trata_get_servidor(soquete, &mensagem);
+            break;
         case NACK:
             //envia_nack()
             
