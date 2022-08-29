@@ -96,4 +96,16 @@ void trata_ls_servidor(int soquete, msg_t *mensagem);
 
 /***************************************FIM LS************************************************/
 
+/******************************************CD*************************************************/
+
+/**
+ * @brief Se o servidor recebeu um cd, trata esse CD
+ * 
+ * @param soquete (int) : Soquete
+ * @param mensagem (msg_t*) : Mensagem contendo a mensagem com o comando
+ */
+void trata_cd_servidor(int soquete, msg_t *mensagem);
+
+/***************************************FIM CD************************************************/
+
 #endif

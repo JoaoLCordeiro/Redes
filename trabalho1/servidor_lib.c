@@ -422,3 +422,39 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
 
 }
 /***************************************FIM LS*************************************************/
+
+/******************************************CD**************************************************/
+void trata_cd_servidor(int soquete, msg_t *mensagem){
+
+    msg_t msg;
+    if ( chdir (mensagem->dados) == -1) {
+
+        init_mensagem(&msg, 0, sequencia_global, ERRO, "");
+
+    }
+    else {
+        init_mensagem(&msg, 0, sequencia_global, OK, "");
+    }
+                //Manda mensagem com o erro
+    if (! manda_mensagem(soquete, &msg)) {
+        perror("Não foi possível enviar o retorno no trata_cd_servidor");
+    }
+    //Espera resposta do cliente (ACK)
+    while(1) {
+        switch (recebe_retorno(soquete, &msg)){
+            
+            // Se recebeu ack acaba
+            case ACK:
+                return;
+                break;
+            // Se recebeu mensagem errada manda um NACK
+            case NACK:
+                manda_nack(soquete);
+                break;
+        }
+    }
+
+
+        
+}
+/***************************************FIM CD*************************************************/

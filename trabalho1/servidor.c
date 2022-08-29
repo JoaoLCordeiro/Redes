@@ -41,6 +41,9 @@ int main(){
         case LS:
             trata_ls_servidor(soquete, &mensagem);
             break;
+        case CD:
+            trata_cd_servidor(soquete, &mensagem);
+            break;
         case NACK:
             //envia_nack()
             

@@ -32,6 +32,7 @@ int main(){
         scanf("%63[^\n]", buffer_c);
         getchar();
 
+
         switch (compara_comando(buffer_c)) {
 
             case PUT:
@@ -47,16 +48,14 @@ int main(){
                 trata_ls_cliente(soquete, buffer_c);
                 break;
             case CD:
-                //envia_mensagem_cd
-                if (send(soquete, buffer_c, TAM_BUF, 0) < 0){
-                    perror("send(): Error");
-                }
+                trata_cd_cliente(soquete);
                 break;
             default:
                 printf("Comando não existente\n");
                 break;
             }
 
+        memset(buffer_c, 0, TAM_BUF);
     }
 
     return 0;
