@@ -309,7 +309,7 @@ void trata_get_cliente(int soquete){
 
 /*****************************************MKDIR************************************************/
 void trata_mkdir_cliente(int soquete){
-
+    
     printf("trata_mkdir_cliente\n");
 
     msg_t mensagem;
@@ -323,31 +323,79 @@ void trata_mkdir_cliente(int soquete){
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
-            perror("Erro ao enviar mensagem no trata_put_cliente");
+            perror("Erro ao enviar mensagem no trata_mkdir_cliente");
 
         /*Recebe uma mensagem com o tamanho do arquivo*/
         switch (recebe_retorno(soquete, &mensagem)) {
             
             //se for ok, continua
             case OK:
+                manda_ack(soquete);
                 printf("Diretório criado com sucesso\n");
                 return;
                 break;
 
             //se for erro, vai pegar outro comando
             case ERRO:
+                manda_ack(soquete);
                 printf("O diretório não foi criado\n");
                 return;
                 break;
 
             //dá break e re-envia a msg quando volta o laço
             case NACK:
+                //manda_nack(soquete); 
                 //manda mensagem novamente
                 break;
         }
     }
 
     return;
+}
+/***************************************FIM MKDIR**********************************************/
 
+/******************************************LS**************************************************/
+void trata_ls_cliente(int soquete, char * buffer_c){
+
+    printf("trata_ls_cliente\n");
+    msg_t mensagem_ls;
+
+
+    init_mensagem(&mensagem_ls, strlen(buffer_c), sequencia_global, LS, buffer_c);
+    while (1){
+        if (! manda_mensagem (soquete, &mensagem_ls))
+            perror("Erro ao enviar mensagem no trata_ls_cliente");
+
+        /*Recebe uma mensagem com o tamanho do arquivo*/
+        switch (recebe_retorno(soquete, &mensagem_ls)) {
+            
+            //se for NA_TELA, printa na tela, manda ack e continua
+            case NA_TELA:
+                printf("%s", mensagem_ls.dados);
+                init_mensagem(&mensagem_ls, 0, sequencia_global, ACK, "");
+                break;
+
+            //se for erro, avisa que deu erro e termina
+            case ERRO:
+                manda_ack(soquete);
+                printf("O diretório não possui permissão de leitura\n");
+                return;
+                break;
+
+            case NACK:
+                //manda_nack(soquete); 
+                //manda mensagem novamente
+                break;
+
+            // Se for fim, acabou.
+            case FIM:
+                manda_ack(soquete);
+                return;
+                break;
+        }
+    }
+
+    return;
 
 }
+/***************************************FIM LS*************************************************/

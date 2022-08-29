@@ -38,10 +38,22 @@ typedef struct msg_t
 
 } msg_t;
 
-/***/
+/**
+ * @brief Manda mensagem.
+ * 
+ * @param soquete (int) : Soquete
+ * @param mensagem (msg_t *) : Mensagem a ser enviada
+ * @return int 0 se erro, 1 caso contrário
+ */
 int manda_mensagem (int soquete, msg_t *mensagem);
 
-/***/
+/**
+ * @brief Recebe mensagem.
+ * 
+ * @param soquete (int) : Soquete
+ * @param mensagem (msg_t *) : Mensagem recebida
+ * @return int : 0 se erro, 1 caso contrário 
+ */
 int recebe_mensagem (int soquete, msg_t *mensagem);
 
 /**
@@ -102,15 +114,15 @@ void imprime_mensagem(msg_t *mensagem);
  */
 void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensagem, char *dados);
 
+
 /**
- * @brief Envia a mensagem dando ok ao cliente
+ * @brief Recebe a mensagem e retorna o seu tipo. Em caso de erro,
+ * retorna NACK. Se receber um NACK, manda novamente a última mensagem.
  * 
- * @param soquete (_int_) : Soquete
- * 
+ * @param soquete (int) : Soquete
+ * @param mensagem (msg_t*) : Última mensagem.
+ * @return int 
  */
-void envia_ok(int soquete);
-
-
 int recebe_retorno(int soquete, msg_t *mensagem);
 
 /**
@@ -148,6 +160,28 @@ int tamanho_do_arquivo(FILE *);
 FILE *abre_arquivo(char *nome_arquivo, char *modo);
 
 
-FILE *pega_transforma_tam_arq(unsigned char *buffer_tamanho, char *nome_arquivo);
+/**
+ * @brief Testa se o diretório que o cliente quer criar já existe,
+ * e se ele tem permissão de criá-lo no dir correte.
+ * 
+ * @param msg_nome_dir (msg_t*) : Mensagem contendo o tamanho do diretório
+ * @return int : 0 se der algum erro, 1 caso contrário
+ */
+int testa_existencia_diretorio(msg_t* msg_nome_dir);
+
+
+/**
+ * @brief Manda um nack 
+ *  
+ * @param soquete (int) : Soquete
+ */
+void manda_nack(int soquete);
+
+/**
+ * @brief Manda um ack
+ * 
+ * @param soquete (int) : soquete
+ */
+void manda_ack(int soquete);
 
 #endif

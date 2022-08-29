@@ -35,7 +35,12 @@ int main(){
             trata_get_servidor(soquete, &mensagem);
             break;
         case MKDIR:
-            break; 
+            trata_mkdir_servidor(soquete, &mensagem);
+            break;
+
+        case LS:
+            trata_ls_servidor(soquete, &mensagem);
+            break;
         case NACK:
             //envia_nack()
             

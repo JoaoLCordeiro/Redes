@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include <sys/types.h>
 //#include <linux/types.h>
@@ -51,6 +52,7 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
 
 char calcula_paridade (int tamanho, char * dados){
     
+    // Faz um XOR dos bits para cada byte da mensagem.
     unsigned char aux = dados[0];
     for (int i = 1; i < tamanho; i++)
         aux = aux ^ dados[i];
@@ -60,7 +62,11 @@ char calcula_paridade (int tamanho, char * dados){
 
 int testa_paridade(msg_t*mensagem) {
 
+    // Calcula a paridade da mensagem que chegou
     int paridade = (int)calcula_paridade(mensagem->size_msg, mensagem->dados);
+
+    // Testa a paridade calculada com a paridade da mensagem que chegou
+    // Se ela é igual ou o seu complemente de dois ela chegou certo (teoricamente)
     if (mensagem->paridade - paridade == 256 || paridade == mensagem->paridade)
         return 1;
     printf("PARIDADE CALCULADA %d ----- PARIDADE DA MENSAGEM %d\n", paridade, mensagem->paridade);    
@@ -70,13 +76,14 @@ int testa_paridade(msg_t*mensagem) {
 
 int compara_comando(char *comando){
 
+    // Testa o comando que o usuário digitou
     if (! strcmp(comando, "put"))
         return PUT;
     else if (! strcmp(comando, "get"))
         return GET;
     else if (! strcmp(comando, "mkdir"))
         return MKDIR;
-    else if (! strcmp(comando, "ls"))
+    else if (! strcmp(comando, "ls") || ! strcmp(comando, "ls -a") || ! strcmp(comando, "ls -l"))
         return LS;
     else if (! strcmp(comando, "cd"))
         return CD;
@@ -89,6 +96,7 @@ int compara_comando(char *comando){
 
 void init_dados(int tamanho, char *buffer_dados, char *dados){
 
+    //Limpa o buffer e copia os dados para o buffer de dados
     memset(buffer_dados, 0, TAM_BUFFER_DADOS);
     memcpy(buffer_dados, dados, tamanho);
 
@@ -110,6 +118,7 @@ void imprime_mensagem(msg_t *mensagem) {
 
 void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensagem, char *dados) {
         
+    // Inicializa os campos da estrutura mensagem
     mensagem->marc_inicio = MARC_INICIO;
     mensagem->size_msg = tamanho;
     mensagem->sequencia = sequencia;
@@ -118,20 +127,11 @@ void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensage
     mensagem->paridade = (unsigned int)calcula_paridade(mensagem->size_msg, mensagem->dados);
 }
 
-void envia_ok(int soquete) {
-
-    msg_t aux;
-    init_mensagem(&aux, 0, 0, OK, "");
-    if (send(soquete, &aux, sizeof(msg_t), 0) < 0){
-        perror("send(): envia_ok");
-        return;
-    }
-
-}
 
 int recebe_retorno(int soquete, msg_t *mensagem){
     
     while (1) {
+        // Recebe uma mensagem
         if (! recebe_mensagem (soquete, mensagem)) 
             perror("Erro ao receber mensagem no recebe_retorno");
         
@@ -194,8 +194,13 @@ int check_permissao_existencia(char *nome_arquivo) {
 
 int tamanho_do_arquivo(FILE * arquivo) {
     
+    // Vai até o final do arquivo
     fseek(arquivo, 0L, SEEK_END);
+
+    // Pega a posição atual do ponteiro, ou seja, seu números de bytes
     unsigned int size = ftell(arquivo);
+    
+    // volta o ponteiro do arquivo para o início
     fseek(arquivo, 0L, SEEK_SET);
 
     return size;
@@ -223,4 +228,31 @@ FILE *abre_arquivo(char *nome_arquivo, char *modo) {
 
 }
 
+int testa_existencia_diretorio(msg_t* msg_nome_dir) {
+
+    // Testa para ver se o diretório que cliente quer criar já existe e verifica se o diretório atual tem permissão
+    if ((access(msg_nome_dir->dados, F_OK) == 0) || tem_permissao() == -1){
+        return 0;
+    }
+    return 1;
+
+}
+
+void manda_nack(int soquete) {
+
+    msg_t msg_nack;
+    init_mensagem(&msg_nack, 0, sequencia_global, NACK, "");
+    if( ! manda_mensagem (soquete, &msg_nack)) {
+        perror("Erro ao mandar nack");
+    }
+
+}
+
+void manda_ack(int soquete) {
+    msg_t msg_ack;
+    init_mensagem(&msg_ack, 0, sequencia_global, ACK, "");
+    if( ! manda_mensagem (soquete, &msg_ack)) {
+        perror("Erro ao mandar ack");
+    }
+}
 

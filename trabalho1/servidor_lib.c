@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <dirent.h>
 
 #include <sys/types.h>
 //#include <linux/types.h>
@@ -161,9 +163,9 @@ int recebe_mensagem_server(int soquete, msg_t *mensagem) {
         return NACK;
     }
 }
-/****************************************FIM PUT************************************************/
+/****************************************FIM PUT***********************************************/
 
-
+/*****************************************GET**************************************************/
 void get_dados_server(int soquete, FILE *arq_server){
 
     int contador = 1;
@@ -279,3 +281,144 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
     return;
 
 }
+/****************************************FIM GET***********************************************/
+
+/*****************************************MKDIR************************************************/
+void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
+
+    //REMOVER COMENTARIO
+    //aqui, o servidor deveria testar algo com o tamanho do arquivo, mas nao fizemos
+
+    printf("trata_mkdir_sevidor\n");
+    
+
+    //cria um ok
+    msg_t mensagem;
+    
+    if (! testa_existencia_diretorio(msg_nome_diretorio)) {
+        init_mensagem(&mensagem, 0, sequencia_global, ERRO, "");
+    }
+    else {
+        init_mensagem(&mensagem, 0, sequencia_global, OK, "");
+        
+        FILE * saida_comando;
+        char comando[BUFFER_IMENSO] = "mkdir ";
+        
+        strcat(comando, msg_nome_diretorio->dados);
+        saida_comando = popen(comando, "r");
+
+        pclose (saida_comando);
+    }
+
+    //manda um ok
+    if (! manda_mensagem (soquete, &mensagem))
+        perror("Erro ao enviar mensagem no trata_put_servidor");
+    switch (recebe_retorno(soquete, &mensagem)) {
+        
+        //se for ACK, acabou
+        case ACK:         
+            return;
+            break;
+
+        //Remanda mensagem
+        case NACK:
+            //manda_nack();
+            break;
+    }
+
+    return;
+
+}
+/******************************************FIM*************************************************/
+
+/******************************************LS**************************************************/
+void trata_ls_servidor(int soquete, msg_t *mensagem){
+
+    printf("trata_ls_servidor\n");
+
+
+    msg_t msg;
+
+    // Testa permissão do diretório corrente
+    // Se não tem permissão
+    if ( access("./", R_OK) != 0 ) {
+        init_mensagem(&msg, 0, sequencia_global, ERRO, "");
+
+        //Manda mensagem com o erro
+        if (! manda_mensagem(soquete, &msg)) {
+            perror("Não foi possível enviar ERRO no trata_ls_servidor");
+        }
+
+        //Espera resposta do cliente (ACK)
+        while(1) {
+            switch (recebe_retorno(soquete, &msg)){
+                
+                // Se recebeu ack acaba
+                case ACK:
+                    return;
+                    break;
+
+                // Se recebeu mensagem errada manda um NACK
+                case NACK:
+                    manda_nack(soquete);
+                    break;
+            }
+        }
+    }
+    //Se tem permissão
+
+    //Executam comando e salva a saída no arquivo saida_comando
+    FILE * saida_comando = popen(mensagem->dados, "r");
+    char buffer_arq[TAM_BUFFER_DADOS];
+
+    int bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, saida_comando);
+    
+    while (bytes_lidos != 0){
+
+        init_mensagem(&msg, bytes_lidos, sequencia_global, NA_TELA, buffer_arq);
+        int ack = 0;
+        while (! ack){
+            if (! manda_mensagem (soquete, &msg))
+                perror("Erro ao enviar mensagem no put_dados");
+
+            switch (recebe_retorno(soquete, &msg)) {
+                
+                //se for ack, quebra o laço interno e vai pro laço externo pegar mais dados
+                case ACK:
+                    ack = 1;
+                    break;
+
+                //se for nack
+                case NACK:
+                    //manda_nack(soquete);
+                    break;
+            }
+        }
+        memset(buffer_arq, 0, TAM_BUFFER_DADOS);
+        bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, saida_comando);
+    }
+    pclose(saida_comando);
+
+    //manda uma mensagem do tipo FIM
+    init_mensagem(&msg, 0, sequencia_global, FIM, "");
+
+    //considerando que o cliente responde um FIM com um ACK
+    while (1){
+        if (! manda_mensagem (soquete, &msg))
+            perror("Erro ao enviar mensagem no put_dados");
+
+        switch (recebe_retorno(soquete, &msg)) {
+            //se for ack, acaba
+            case ACK:
+                printf("trata_ls_server: recebeu um ack do cliente, retornando...\n");
+                return;
+
+            //dá break e re-envia a msg quando volta o laço
+            case NACK:
+                break;
+        }
+    }
+
+
+}
+/***************************************FIM LS*************************************************/

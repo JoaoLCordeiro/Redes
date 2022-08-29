@@ -29,7 +29,8 @@ int main(){
 
         
         printf("Digite o comando\n");
-        scanf("%s", buffer_c);
+        scanf("%63[^\n]", buffer_c);
+        getchar();
 
         switch (compara_comando(buffer_c)) {
 
@@ -43,10 +44,7 @@ int main(){
                 trata_mkdir_cliente(soquete);
                 break;
             case LS:
-                //envia_mensagem_ls
-                if (send(soquete, buffer_c, TAM_BUF, 0) < 0){
-                    perror("send(): Error");
-                }
+                trata_ls_cliente(soquete, buffer_c);
                 break;
             case CD:
                 //envia_mensagem_cd
