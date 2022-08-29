@@ -55,10 +55,6 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
                 return;
                 break;
 
-            //dá break e re-envia o ok
-            case NACK:
-                break;
-
             default:
                 break;
         }
@@ -93,10 +89,6 @@ void put_tamanho_server(int soquete, char *nome_arq){
 
                 //voltou da dados_server, agora dai dessa funcao
                 return;
-                break;
-
-            //dá break e re-envia o ok
-            case NACK:
                 break;
         }
     }
@@ -138,10 +130,6 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
                 //voltou da função do tamanho, sai dessa funcao
                 return;
                 break;
-
-            //dá break e re-envia o ok
-            case NACK:
-                break;
         }
     }
 
@@ -158,9 +146,10 @@ int recebe_mensagem_server(int soquete, msg_t *mensagem) {
             if (testa_paridade(mensagem))
                 return mensagem->tipo;
             else
-                return NACK;
+                manda_nack(soquete);
         }
-        return NACK;
+        else
+            manda_nack(soquete);
     }
 }
 /****************************************FIM PUT***********************************************/
@@ -191,10 +180,6 @@ void get_dados_server(int soquete, FILE *arq_server){
                 case ACK:
                     ack = 1;
                     break;
-
-                //dá break e re-envia a msg quando volta o laço
-                case NACK:
-                    break;
             }
         }
         memset(buffer_arq, 0, TAM_BUFFER_DADOS);
@@ -215,9 +200,6 @@ void get_dados_server(int soquete, FILE *arq_server){
                 printf("get_dados_server: recebeu um ack do cliente, retornando...\n");
                 printf("Contador -> %d\n", contador);
                 return;
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
-                break;
         }
     }
 
@@ -270,10 +252,6 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
             case ERRO:
                 return;
             break;
-
-            //dá break e re-envia o tamanho
-            case NACK:
-            break;
         }
     }
 
@@ -319,11 +297,6 @@ void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
         case ACK:         
             return;
             break;
-
-        //Remanda mensagem
-        case NACK:
-            //manda_nack();
-            break;
     }
 
     return;
@@ -357,11 +330,6 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
                 case ACK:
                     return;
                     break;
-
-                // Se recebeu mensagem errada manda um NACK
-                case NACK:
-                    manda_nack(soquete);
-                    break;
             }
         }
     }
@@ -387,11 +355,6 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
                 case ACK:
                     ack = 1;
                     break;
-
-                //se for nack
-                case NACK:
-                    //manda_nack(soquete);
-                    break;
             }
         }
         memset(buffer_arq, 0, TAM_BUFFER_DADOS);
@@ -412,10 +375,6 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
             case ACK:
                 printf("trata_ls_server: recebeu um ack do cliente, retornando...\n");
                 return;
-
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
-                break;
         }
     }
 
@@ -446,10 +405,6 @@ void trata_cd_servidor(int soquete, msg_t *mensagem){
             // Se recebeu ack acaba
             case ACK:
                 return;
-                break;
-            // Se recebeu mensagem errada manda um NACK
-            case NACK:
-                manda_nack(soquete);
                 break;
         }
     }

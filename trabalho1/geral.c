@@ -153,13 +153,12 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                 }
             
             }
-            else {
+            else
             //retorna NACK para mensagens com erro no marcador ou na paridade
-                return NACK;
-            }    
+                manda_nack(soquete);    
         }
-        printf("MARCADOR DE INÍCIO DEU RUIM\n");
-        return NACK;
+        else
+            manda_nack(soquete);
     }
 
 }

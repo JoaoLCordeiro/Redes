@@ -38,10 +38,6 @@ void put_dados_cliente (int soquete, FILE * arq){
                 case ACK:
                     ack = 1;
                     break;
-
-                //dá break e re-envia a msg quando volta o laço
-                case NACK:
-                    break;
             }
         }
         memset(buffer_arq, 0, TAM_BUFFER_DADOS);
@@ -62,9 +58,6 @@ void put_dados_cliente (int soquete, FILE * arq){
                 printf("put_dados_cliente: recebeu um ack do server, retornando...\n");
                 printf("Contador -> %d\n", contador);
                 return;
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
-                break;
         }
     }
 }
@@ -102,10 +95,6 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
             case ERRO:
                 printf("Erro no comando PUT: sem espaço disponível\n");
                 return;
-                break;
-
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
                 break;
         }
     }
@@ -145,11 +134,6 @@ void trata_put_cliente (int soquete){
             case ERRO:
                 printf("Erro no comando PUT: arquivo não permitido\n");
                 return;
-                break;
-
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
-                printf("vasco");
                 break;
         }
     }
@@ -200,13 +184,6 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
                 printf("%d\n", conta_mensagens);
                 return;
                 break;
-
-            //dá break e re-envia o ok
-            case NACK:
-                break;
-
-            default:
-                break;
         }
     }
 
@@ -246,9 +223,6 @@ void get_tamanho_cliente(int soquete, char *nome_arquivo, msg_t *msg_tam_server)
 
             case ERRO:
                 return;
-                break;
-            //dá break e re-envia o ok
-            case NACK:
                 break;
         }
     }
@@ -292,11 +266,6 @@ void trata_get_cliente(int soquete){
                 printf("Erro no comando GET: arquivo não permitido\n");
                 return;
                 break;
-
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
-                printf("vasco");
-                break;
         }
     }
 
@@ -339,12 +308,6 @@ void trata_mkdir_cliente(int soquete){
                 printf("O diretório não foi criado\n");
                 return;
                 break;
-
-            //dá break e re-envia a msg quando volta o laço
-            case NACK:
-                //manda_nack(soquete); 
-                //manda mensagem novamente
-                break;
         }
     }
 
@@ -378,11 +341,6 @@ void trata_ls_cliente(int soquete, char * buffer_c){
                 manda_ack(soquete);
                 printf("O diretório não possui permissão de leitura\n");
                 return;
-                break;
-
-            case NACK:
-                //manda_nack(soquete); 
-                //manda mensagem novamente
                 break;
 
             // Se for fim, acabou.
@@ -431,11 +389,6 @@ void trata_cd_cliente(int soquete){
                 manda_ack(soquete);
                 printf("Erro ao dar CD\n");
                 return;
-                break;
-
-            case NACK:
-                //manda_nack(soquete); 
-                //manda mensagem novamente
                 break;
 
             // Se for fim, acabou.
