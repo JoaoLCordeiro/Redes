@@ -191,6 +191,6 @@ void manda_ack(int soquete);
  * @param string_destino (char*) : destino onde sera feita a string
  * @param mensagem (mst_t*) : mensagem recebida anteriormente
  */
-void escreve_string (int soquete, char* string_destino, mst_t *mensagem);
+void escreve_string (int soquete, char* string_destino, msg_t *mensagem);
 
 #endif

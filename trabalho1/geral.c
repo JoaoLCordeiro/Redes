@@ -145,7 +145,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                     //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
 
                     //re-faz a mensagem com a sequencia correta
-                    init_mensagem(mensagem, mensagem->tamanho, sequencia_global, mensagem->tipo, mensagem->dados);
+                    init_mensagem(mensagem, mensagem->size_msg, sequencia_global, mensagem->tipo, mensagem->dados);
 
                     if (! manda_mensagem (soquete, mensagem))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
@@ -259,7 +259,7 @@ void manda_ack(int soquete) {
     }
 }
 
-void escreve_string (int soquete, char* string_destino, mst_t *mensagem){
+void escreve_string (int soquete, char* string_destino, msg_t *mensagem){
     //pega a primeira mensagem com nome
     strcpy (string_destino, mensagem->dados);
     msg_t mensagem_ok;
@@ -286,7 +286,7 @@ void escreve_string (int soquete, char* string_destino, mst_t *mensagem){
 }
 
 void manda_nome (int soquete, char* nome, int tipo){
-    mst_t mensagem;
+    msg_t mensagem;
 
     if (strlen(nome) <= 63){
         //simplesmente manda o nome em uma unica mensagem
@@ -300,7 +300,7 @@ void manda_nome (int soquete, char* nome, int tipo){
         return;
     }
     else{
-        char buffer[TAM_BUF];
+        char buffer[TAM_BUFFER_DADOS];
         strcpy (buffer, nome, 63);
 
         //manda a primeira mensagem
@@ -308,7 +308,7 @@ void manda_nome (int soquete, char* nome, int tipo){
         manda_mensagem (soquete, &mensagem);
 
         //avança o ponteiro
-        nome = nome[63];
+        nome = &(nome[63]);
 
         //manda o resto das mensagens menos a ultima
         while (63 - strlen(nome) < 0){
@@ -322,7 +322,7 @@ void manda_nome (int soquete, char* nome, int tipo){
                 return;
             }
 
-            nome = nome[63];
+            nome = &(nome[63]);
         }
 
         //manda a ultima mensagem
