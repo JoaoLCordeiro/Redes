@@ -124,7 +124,10 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
     
     //coloca o nome do arquivo q está em msg_put_inicial no nome_arquivo
     char nome_arquivo[BUFFER_IMENSO];
-    strcpy(nome_arquivo, msg_put_inicial->dados);
+
+    escreve_string (soquete, nome_arquivo, msg_put_inicial);
+
+    //strcpy(nome_arquivo, msg_put_inicial->dados);
 
     //verifica permissão do diretório
     if (tem_permissao() < 0){
@@ -219,7 +222,10 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
     
     //coloca o nome do arquivo q está em msg_put_inicial no nome_arquivo
     char nome_arquivo[BUFFER_IMENSO];
-    strcpy(nome_arquivo, msg_get_inicial->dados);
+
+    escreve_string (soquete, nome_arquivo, msg_get_inicial);
+
+    //strcpy(nome_arquivo, msg_get_inicial->dados);
 
     //verifica se o arquivo existe e se pode lê-lo
     if (check_permissao_existencia(nome_arquivo) < 0){
@@ -270,11 +276,13 @@ void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
 
     printf("trata_mkdir_sevidor\n");
     
+    char nome_dir[BUFFER_IMENSO];
+    escreve_string (soquete, nome_dir, msg_nome_diretorio);
 
     //cria um ok
     msg_t mensagem;
     
-    if (! testa_existencia_diretorio(msg_nome_diretorio)) {
+    if (! testa_existencia_diretorio(nome_dir)) {
         init_mensagem(&mensagem, 0, sequencia_global, ERRO, "");
     }
     else {
@@ -283,7 +291,7 @@ void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
         FILE * saida_comando;
         char comando[BUFFER_IMENSO] = "mkdir ";
         
-        strcat(comando, msg_nome_diretorio->dados);
+        strcat(comando, nome_dir);
         saida_comando = popen(comando, "r");
 
         pclose (saida_comando);

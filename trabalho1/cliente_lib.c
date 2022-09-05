@@ -105,18 +105,20 @@ void trata_put_cliente (int soquete){
     printf("trata_put_cliente\n");
 
     msg_t mensagem;
-    char buffer_nome[TAM_BUFFER_DADOS];
+    char buffer_nome[BUFFER_IMENSO];
 
     //envia_mensagem_put
     printf("Digite o nome do arquivo\n");
-    scanf("%s", buffer_nome);
+    scanf("%65535[^\n]", buffer_nome);
+    getchar();
 
     if (check_permissao_existencia(buffer_nome) < 0) {
         perror("O Arquivo não existe ou você não possui permissão de leitura");
         return;
     }
 
-    init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, PUT, buffer_nome);
+    manda_nome (soquete, buffer_nome, PUT);
+    init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
@@ -232,20 +234,22 @@ void get_tamanho_cliente(int soquete, char *nome_arquivo, msg_t *msg_tam_server)
 
 }
 
-
 void trata_get_cliente(int soquete){
 
 
     printf("trata_get_cliente\n");
 
     msg_t mensagem;
-    char buffer_nome[TAM_BUFFER_DADOS];
+    char buffer_nome[BUFFER_IMENSO];
 
     //envia_mensagem_put
     printf("Digite o nome do arquivo\n");
-    scanf("%s", buffer_nome);
+    scanf("%65535[^\n]", buffer_nome);
+    getchar();
 
-    init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, GET, buffer_nome);
+    manda_nome (soquete, buffer_nome, GET);
+
+    init_mensagem(&mensagem, 0, sequencia_global, FIM, 0);
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
@@ -280,13 +284,20 @@ void trata_mkdir_cliente(int soquete){
     printf("trata_mkdir_cliente\n");
 
     msg_t mensagem;
-    char buffer_nome[TAM_BUFFER_DADOS];
+    char buffer_nome[BUFFER_IMENSO];
 
     //envia_mensagem_put
     printf("Digite o nome do diretório que você quer criar no servidor\n");
-    scanf("%s", buffer_nome);
+    //scanf("%s", buffer_nome);
 
-    init_mensagem(&mensagem, strlen(buffer_nome), sequencia_global, MKDIR, buffer_nome);
+    scanf("%65535[^\n]", buffer_nome);
+    getchar();
+
+    //manda o nome em mensagens
+    manda_nome (soquete, buffer_nome, MKDIR);
+
+    //cria um fim
+    init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
 
     while (1){
         if (! manda_mensagem (soquete, &mensagem))
