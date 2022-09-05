@@ -164,10 +164,10 @@ FILE *abre_arquivo(char *nome_arquivo, char *modo);
  * @brief Testa se o diretório que o cliente quer criar já existe,
  * e se ele tem permissão de criá-lo no dir correte.
  * 
- * @param msg_nome_dir (msg_t*) : Mensagem contendo o tamanho do diretório
+ * @param nome_dir (char*) : Nome do diretorio
  * @return int : 0 se der algum erro, 1 caso contrário
  */
-int testa_existencia_diretorio(msg_t* msg_nome_dir);
+int testa_existencia_diretorio(char* nome_dir);
 
 
 /**
@@ -183,5 +183,23 @@ void manda_nack(int soquete);
  * @param soquete (int) : soquete
  */
 void manda_ack(int soquete);
+
+/**
+ * @brief Pega todas as mensagens com nome e junta em uma string
+ * 
+ * @param soquete (int) : soquete
+ * @param string_destino (char*) : destino onde sera feita a string
+ * @param mensagem (mst_t*) : mensagem recebida anteriormente
+ */
+void escreve_string (int soquete, char* string_destino, msg_t *mensagem);
+
+/**
+ * @brief Pega uma string e manda em varias mensagens
+ * 
+ * @param soquete (int) : soquete
+ * @param nome (char*) : string a ser enviada
+ * @param tipo (int) : tipo da mensagem
+ */
+void manda_nome (int soquete, char* nome, int tipo);
 
 #endif

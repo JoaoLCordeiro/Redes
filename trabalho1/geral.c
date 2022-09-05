@@ -228,10 +228,10 @@ FILE *abre_arquivo(char *nome_arquivo, char *modo) {
 
 }
 
-int testa_existencia_diretorio(msg_t* msg_nome_dir) {
+int testa_existencia_diretorio(char* nome_dir) {
 
     // Testa para ver se o diretório que cliente quer criar já existe e verifica se o diretório atual tem permissão
-    if ((access(msg_nome_dir->dados, F_OK) == 0) || tem_permissao() == -1){
+    if ((access(nome_dir, F_OK) == 0) || tem_permissao() == -1){
         return 0;
     }
     return 1;
@@ -256,3 +256,109 @@ void manda_ack(int soquete) {
     }
 }
 
+void escreve_string (int soquete, char* string_destino, msg_t *mensagem){
+    printf("escreve_string\n");
+
+    //pega a primeira mensagem com nome
+    strcpy (string_destino, mensagem->dados);
+    msg_t mensagem_ok;
+    
+    while(1){
+        //manda um ok
+        init_mensagem(&mensagem_ok, 0, sequencia_global, OK, "");
+        if (! manda_mensagem(soquete, &mensagem_ok))
+            perror ("escreve_string: erro no manda mensagem\n");
+
+        //recebe mais uma mensagem
+        switch (recebe_retorno(soquete, mensagem)){
+
+            //se tiver mais nome, concatena
+            case DESC:
+                strcat(string_destino, mensagem->dados);
+                printf("escreve_string: concatenou\n");
+                break;
+
+            //se nao, retorna
+            case FIM:
+                return;
+
+            default:
+                printf("erro desconhecido no escreve_string\n");
+                break;
+        }
+    }
+}
+
+void manda_nome (int soquete, char* nome, int tipo){
+    printf("manda_nome\n");
+
+    msg_t mensagem;
+
+    if (strlen(nome) <= 63){
+        printf("manda_nome: entrou no string <= 63\n");
+
+        //simplesmente manda o nome em uma unica mensagem
+        init_mensagem(&mensagem, strlen(nome), sequencia_global, tipo, nome);
+        manda_mensagem (soquete, &mensagem);
+
+        if (recebe_retorno(soquete, &mensagem) == OK)
+            return;
+        
+        perror ("manda_nome: erro inesperado em mensagem pequena\n");
+        return;
+    }
+    else{
+        printf("manda_nome: entrou no string > 63\n");
+
+        char buffer[TAM_BUFFER_DADOS];
+        memcpy (buffer, nome, 63);
+
+        //manda a primeira mensagem
+        init_mensagem (&mensagem, 63, sequencia_global, tipo, buffer);
+        manda_mensagem (soquete, &mensagem);
+
+        int cont = 1;
+        printf("manda_nome: enviou mensagem %d\n", cont);
+
+        if (recebe_retorno(soquete, &mensagem) != OK){
+            perror ("manda_nome: erro inesperado em mensagem grande\n");
+            return;
+        }
+
+        //avança o ponteiro
+        nome = &(nome[63]);
+        memset (buffer, 0, 64);
+
+        //manda o resto das mensagens menos a ultima
+        while (63 - strlen(nome) < 0){
+            memcpy (buffer, nome, 63);
+
+            init_mensagem (&mensagem, 63, sequencia_global, DESC, buffer);
+            manda_mensagem (soquete, &mensagem);
+
+            cont++;
+            printf("manda_nome: enviou mensagem %d\n", cont);
+
+            if (recebe_retorno(soquete, &mensagem) != OK){
+                perror ("manda_nome: erro inesperado em mensagem grande\n");
+                return;
+            }
+
+            nome = &(nome[63]);
+            memset (buffer, 0, 64);
+        }
+
+        //manda a ultima mensagem
+        init_mensagem (&mensagem, strlen(nome), sequencia_global, DESC, nome);
+        manda_mensagem (soquete, &mensagem);
+
+        cont++;
+        printf("manda_nome: enviou mensagem %d\n", cont);
+
+        if (recebe_retorno(soquete, &mensagem) == OK)
+            return;
+        
+        perror ("manda_nome: erro inesperado em mensagem grande\n");
+        return;
+    }
+}
