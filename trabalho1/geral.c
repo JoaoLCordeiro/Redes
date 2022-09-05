@@ -143,6 +143,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                 //se for um NACK, reenvia a mensagem
                 if (mensagem->tipo == NACK){
                     //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
+					init_mensagem(mensagem, mensagem->size_msg, sequencia_global, mensagem->tipo, mensagem->dados);
                     if (! manda_mensagem (soquete, mensagem))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
                 }
