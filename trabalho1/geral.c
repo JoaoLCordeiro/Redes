@@ -301,7 +301,7 @@ void manda_nome (int soquete, char* nome, int tipo){
     }
     else{
         char buffer[TAM_BUFFER_DADOS];
-        strcpy (buffer, nome, 63);
+        memcpy (buffer, nome, 63);
 
         //manda a primeira mensagem
         init_mensagem (&mensagem, 63, sequencia_global, tipo, buffer);
@@ -309,10 +309,11 @@ void manda_nome (int soquete, char* nome, int tipo){
 
         //avança o ponteiro
         nome = &(nome[63]);
+        memset (buffer, 0, 64);
 
         //manda o resto das mensagens menos a ultima
         while (63 - strlen(nome) < 0){
-            strcpy (buffer, nome, 63);
+            memcpy (buffer, nome, 63);
 
             init_mensagem (&mensagem, 63, sequencia_global, DESC, buffer);
             manda_mensagem (soquete, &mensagem);
@@ -323,6 +324,7 @@ void manda_nome (int soquete, char* nome, int tipo){
             }
 
             nome = &(nome[63]);
+            memset (buffer, 0, 64);
         }
 
         //manda a ultima mensagem
