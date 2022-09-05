@@ -63,7 +63,7 @@ char calcula_paridade (int tamanho, char * dados){
 int testa_paridade(msg_t*mensagem) {
 
     // Calcula a paridade da mensagem que chegou
-    int paridade = (int)calcula_paridade(mensagem->size_msg, mensagem->dados);
+    unsigned int paridade = (unsigned int)calcula_paridade(mensagem->size_msg, mensagem->dados);
 
     // Testa a paridade calculada com a paridade da mensagem que chegou
     // Se ela é igual ou o seu complemente de dois ela chegou certo (teoricamente)
