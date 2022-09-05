@@ -239,6 +239,7 @@ int testa_existencia_diretorio(char* nome_dir) {
 }
 
 void manda_nack(int soquete) {
+	printf("Mandou um nack\n");
 
     msg_t msg_nack;
     init_mensagem(&msg_nack, 0, sequencia_global, NACK, "");
@@ -249,6 +250,8 @@ void manda_nack(int soquete) {
 }
 
 void manda_ack(int soquete) {
+	printf("Mandou um ack\n");
+
     msg_t msg_ack;
     init_mensagem(&msg_ack, 0, sequencia_global, ACK, "");
     if( ! manda_mensagem (soquete, &msg_ack)) {
