@@ -130,36 +130,32 @@ void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensage
 
 int recebe_retorno(int soquete, msg_t *mensagem){
 	msg_t mensagem_aux;
-
-	mensagem_aux.size_msg	= mensagem->size_msg;
-	mensagem_aux.tipo		= mensagem->tipo;
-	init_dados (mensagem_aux.size_msg, mensagem_aux.dados, mensagem->dados);
 	
     while (1) {
         // Recebe uma mensagem
-        if (! recebe_mensagem (soquete, mensagem)) 
+        if (! recebe_mensagem (soquete, &mensagem_aux)) 
             perror("Erro ao receber mensagem no recebe_retorno");
         
         // Verifica se o marcador de início e a paridade são os corretos
-        if (mensagem->marc_inicio == MARC_INICIO) {
+        if (mensagem_aux.marc_inicio == MARC_INICIO) {
             //Testa a paridade
-            if (testa_paridade(mensagem)) {
+            if (testa_paridade(&mensagem_aux)) {
 
                 //se for um NACK, reenvia a mensagem
-                if (mensagem->tipo == NACK){
+                if (mensagem_aux.tipo == NACK){
                     //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
                     char buffer_aux[TAM_BUFFER_DADOS];
 
-                    memcpy(buffer_aux, mensagem_aux.dados, strlen(mensagem_aux.dados));
+                    memcpy(buffer_aux, mensagem->dados, mensagem->size_msg);
 
-					init_mensagem(&mensagem_aux, mensagem_aux.size_msg, sequencia_global, mensagem_aux.tipo, buffer_aux);
-                    if (! manda_mensagem (soquete, &mensagem_aux))
+					init_mensagem(mensagem, mensagem->size_msg, sequencia_global, mensagem->tipo, buffer_aux);
+                    if (! manda_mensagem (soquete, mensagem))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
                 }
 
                 // Senão retorna o tipo    
                 else {
-                    return mensagem->tipo;
+                    return mensagem_aux.tipo;
                 }
             
             }
