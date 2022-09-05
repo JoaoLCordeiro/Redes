@@ -129,7 +129,12 @@ void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensage
 
 
 int recebe_retorno(int soquete, msg_t *mensagem){
-    
+	msg_t mensagem_aux;
+
+	mensagem_aux.size_msg	= mensagem->size_msg;
+	mensagem_aux.tipo		= mensagem->tipo;
+	init_dados (mensagem_aux.size_msg, mensagem_aux.dados, mensagem->dados);
+	
     while (1) {
         // Recebe uma mensagem
         if (! recebe_mensagem (soquete, mensagem)) 
@@ -143,8 +148,8 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                 //se for um NACK, reenvia a mensagem
                 if (mensagem->tipo == NACK){
                     //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
-					init_mensagem(mensagem, mensagem->size_msg, sequencia_global, mensagem->tipo, mensagem->dados);
-                    if (! manda_mensagem (soquete, mensagem))
+					init_mensagem(&mensagem_aux, mensagem_aux.size_msg, sequencia_global, mensagem_aux.tipo, mensagem_aux.dados);
+                    if (! manda_mensagem (soquete, &mensagem_aux))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
                 }
 
