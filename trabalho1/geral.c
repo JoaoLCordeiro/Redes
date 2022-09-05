@@ -259,3 +259,80 @@ void manda_ack(int soquete) {
     }
 }
 
+void escreve_string (int soquete, char* string_destino, mst_t *mensagem){
+    //pega a primeira mensagem com nome
+    strcpy (string_destino, mensagem->dados);
+    msg_t mensagem_ok;
+    
+    while(1){
+        //manda um ok
+        init_mensagem(&mensagem_ok, 0, sequencia_global, OK, "");
+        if (! manda_mensagem(soquete, &mensagem_ok))
+            perror ("escreve_string: erro no manda mensagem\n");
+
+        //recebe mais uma mensagem
+        switch (recebe_retorno(soquete, mensagem)){
+
+            //se tiver mais nome, concatena
+            case DESC:
+                strcat(string_destino, mensagem->dados);
+                break;
+
+            //se nao, retorna
+            case FIM:
+                return;
+        }
+    }
+}
+
+void manda_nome (int soquete, char* nome, int tipo){
+    mst_t mensagem;
+
+    if (strlen(nome) <= 63){
+        //simplesmente manda o nome em uma unica mensagem
+        init_mensagem(&mensagem, strlen(nome), sequencia_global, tipo, nome);
+        manda_mensagem (soquete, &mensagem);
+
+        if (recebe_retorno(soquete, &mensagem) == OK)
+            return;
+        
+        perror ("manda_nome: erro inesperado em mensagem pequena\n");
+        return;
+    }
+    else{
+        char buffer[TAM_BUF];
+        strcpy (buffer, nome, 63);
+
+        //manda a primeira mensagem
+        init_mensagem (&mensagem, 63, sequencia_global, tipo, buffer);
+        manda_mensagem (soquete, &mensagem);
+
+        //avança o ponteiro
+        nome = nome[63];
+
+        //manda o resto das mensagens menos a ultima
+        while (63 - strlen(nome) < 0){
+            strcpy (buffer, nome, 63);
+
+            init_mensagem (&mensagem, 63, sequencia_global, DESC, buffer);
+            manda_mensagem (soquete, &mensagem);
+
+            if (recebe_retorno(soquete, &mensagem) != OK){
+                perror ("manda_nome: erro inesperado em mensagem grande\n");
+                return;
+            }
+
+            nome = nome[63];
+        }
+
+        //manda a ultima mensagem
+        init_mensagem (&mensagem, strlen(nome), sequencia_global, DESC, nome);
+        manda_mensagem (soquete, &mensagem);
+
+        if (recebe_retorno(soquete, &mensagem) == OK)
+            return;
+        
+        perror ("manda_nome: erro inesperado em mensagem grande\n");
+        return;
+    }
+}

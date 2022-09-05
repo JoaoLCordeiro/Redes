@@ -13,6 +13,25 @@
 #include "geral.h"
 #include "servidor_lib.h"
 
+/******************************************MAIN*************************************************/
+
+int recebe_mensagem_server(int soquete, msg_t *mensagem) {
+
+    while (1) {
+        recebe_mensagem(soquete, mensagem);
+        if (mensagem->marc_inicio == MARC_INICIO) {
+            if (testa_paridade(mensagem))
+                return mensagem->tipo;
+            else
+                manda_nack(soquete);
+        }
+        else
+            manda_nack(soquete);
+    }
+}
+
+/***************************************FIM MAIN************************************************/
+
 /******************************************PUT**************************************************/
 void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 
@@ -137,21 +156,6 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
     return;
 }
 
-
-int recebe_mensagem_server(int soquete, msg_t *mensagem) {
-
-    while (1) {
-        recebe_mensagem(soquete, mensagem);
-        if (mensagem->marc_inicio == MARC_INICIO) {
-            if (testa_paridade(mensagem))
-                return mensagem->tipo;
-            else
-                manda_nack(soquete);
-        }
-        else
-            manda_nack(soquete);
-    }
-}
 /****************************************FIM PUT***********************************************/
 
 /*****************************************GET**************************************************/
@@ -264,9 +268,6 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
 /*****************************************MKDIR************************************************/
 void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
 
-    //REMOVER COMENTARIO
-    //aqui, o servidor deveria testar algo com o tamanho do arquivo, mas nao fizemos
-
     printf("trata_mkdir_sevidor\n");
     
 
@@ -288,7 +289,7 @@ void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
         pclose (saida_comando);
     }
 
-    //manda um ok
+    //manda um ok ou um erro
     if (! manda_mensagem (soquete, &mensagem))
         perror("Erro ao enviar mensagem no trata_put_servidor");
     switch (recebe_retorno(soquete, &mensagem)) {
@@ -385,8 +386,12 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
 /******************************************CD**************************************************/
 void trata_cd_servidor(int soquete, msg_t *mensagem){
 
+    char nome_dir[BUFFER_IMENSO];
+
+    escreve_string (soquete, nome_dir, mensagem);
+
     msg_t msg;
-    if ( chdir (mensagem->dados) == -1) {
+    if ( chdir (nome_dir) == -1) {
 
         init_mensagem(&msg, 0, sequencia_global, ERRO, "");
 

@@ -184,4 +184,13 @@ void manda_nack(int soquete);
  */
 void manda_ack(int soquete);
 
+/**
+ * @brief Pega todas as mensagens com nome e junta em uma string
+ * 
+ * @param soquete (int) : soquete
+ * @param string_destino (char*) : destino onde sera feita a string
+ * @param mensagem (mst_t*) : mensagem recebida anteriormente
+ */
+void escreve_string (int soquete, char* string_destino, mst_t *mensagem);
+
 #endif

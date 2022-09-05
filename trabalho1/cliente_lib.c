@@ -368,8 +368,11 @@ void trata_cd_cliente(int soquete){
     scanf("%65535[^\n]", caminho_diretorio);
     getchar();
 
+    //manda o nome em quantas mensagens forem necessarias
+    manda_nome(soquete, caminho_diretorio, CD);
 
-    init_mensagem(&mensagem_cd, strlen(caminho_diretorio), sequencia_global, CD, caminho_diretorio);
+    //manda um fim
+    init_mensagem(&mensagem_cd, 0, sequencia_global, FIM, "");
     while (1){
         if (! manda_mensagem (soquete, &mensagem_cd))
             perror("Erro ao enviar mensagem no trata_cd_cliente");
