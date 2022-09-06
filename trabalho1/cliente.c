@@ -21,6 +21,7 @@ int main(){
     
     char buffer_c[TAM_BUF];
 	int soquete = ConexaoRawSocket("lo");
+	//int soquete = ConexaoRawSocket("eno1");
     //int soquete = ConexaoRawSocket("enp1s0");
 
     while (1) {
