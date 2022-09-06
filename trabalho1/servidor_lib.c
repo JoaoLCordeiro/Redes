@@ -39,7 +39,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 
     char aux[128];
     //isso serve para criar outro arquivo, APENAS PARA TESTES
-    strcpy(aux, "./destino/");
+    strcpy(aux, "./destino_servidor/");
     strcat(aux, nome_arq);
 
     FILE * arq = abre_arquivo(aux, "wb+");
@@ -48,12 +48,11 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
         return;
     }
 
-    msg_t mensagem_ack;
     int conta_mensagens = 1;
     
     while (1){
-        init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
-        if (! manda_mensagem (soquete, &mensagem_ack))
+        init_mensagem(mensagem, 0, sequencia_global, ACK, "");
+        if (! manda_mensagem (soquete, mensagem))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, mensagem)) {
@@ -67,8 +66,8 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
                 break;
 
             case FIM:
-                init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
-                manda_mensagem (soquete, &mensagem_ack);
+                init_mensagem(mensagem, 0, sequencia_global, ACK, "");
+                manda_mensagem (soquete, mensagem);
                 fclose(arq);
                 printf("%d\n", conta_mensagens);
                 return;
@@ -127,12 +126,10 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
 
     escreve_string (soquete, nome_arquivo, msg_put_inicial);
 
-    //strcpy(nome_arquivo, msg_put_inicial->dados);
-
     //verifica permissão do diretório
     if (tem_permissao() < 0){
         perror("Você não tem permissão de escrita neste diretório\n");
-        //envia_erro();
+		manda_erro(soquete);
         return;
     }
     
@@ -231,6 +228,7 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
     if (check_permissao_existencia(nome_arquivo) < 0){
         //Voltar uma mensagem de erro
         perror("O Arquivo não existe ou você não possui permissão de leitura");
+		manda_erro(soquete);
         return;
     }
 

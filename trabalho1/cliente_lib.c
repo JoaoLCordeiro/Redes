@@ -93,6 +93,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
 
             //se for erro, vai pegar outro comando
             case ERRO:
+				manda_ack(soquete);
                 printf("Erro no comando PUT: sem espaço disponível\n");
                 return;
                 break;
@@ -134,6 +135,7 @@ void trata_put_cliente (int soquete){
 
             //se for erro, vai pegar outro comando
             case ERRO:
+				manda_ack(soquete);
                 printf("Erro no comando PUT: arquivo não permitido\n");
                 return;
                 break;
@@ -161,12 +163,11 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
         return;
     }
 
-    msg_t mensagem_ack;
     int conta_mensagens = 1;
     
     while (1){
-        init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
-        if (! manda_mensagem (soquete, &mensagem_ack))
+        init_mensagem(mensagem, 0, sequencia_global, ACK, "");
+        if (! manda_mensagem (soquete, mensagem))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, mensagem)) {
@@ -180,8 +181,8 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
                 break;
 
             case FIM:
-                init_mensagem(&mensagem_ack, 0, sequencia_global, ACK, "");
-                manda_mensagem (soquete, &mensagem_ack);
+                init_mensagem(mensagem, 0, sequencia_global, ACK, "");
+                manda_mensagem (soquete, mensagem);
                 fclose(arq);
                 printf("%d\n", conta_mensagens);
                 return;
@@ -224,6 +225,7 @@ void get_tamanho_cliente(int soquete, char *nome_arquivo, msg_t *msg_tam_server)
                 break;
 
             case ERRO:
+				manda_ack(soquete);
                 return;
                 break;
         }
@@ -267,6 +269,7 @@ void trata_get_cliente(int soquete){
 
             //se for erro, vai pegar outro comando
             case ERRO:
+				manda_ack(soquete);
                 printf("Erro no comando GET: arquivo não permitido\n");
                 return;
                 break;

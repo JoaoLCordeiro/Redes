@@ -185,6 +185,13 @@ void manda_nack(int soquete);
 void manda_ack(int soquete);
 
 /**
+ * @brief Manda um erro e espera um ack do cliente
+ * 
+ * @param soquete (int) : soquete
+ */
+void manda_erro(int soquete);
+
+/**
  * @brief Pega todas as mensagens com nome e junta em uma string
  * 
  * @param soquete (int) : soquete

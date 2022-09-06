@@ -13,13 +13,11 @@
 #include "geral.h"
 
 int manda_mensagem (int soquete, msg_t *mensagem){
-    if (send(soquete, mensagem, sizeof(msg_t), 0) < 0)
+    if (send(soquete, mensagem, sizeof(msg_t), 0) < 0){
         return 0;
+	}
     
-    //print do manda mensagem
-    //printf("Manda mensagem:\n");
-   // imprime_mensagem(mensagem);
-    //printf("\n");
+	//printf("mandou tipo %d e sequencia %d\n\n", mensagem->tipo, mensagem->sequencia);
 
     if (sequencia_global >= 15)
             sequencia_global = 1;
@@ -37,10 +35,7 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
             continue;
         }
 
-        //print do recebe mensagem
-        //printf("Recebe mensagem:\n");
-        //imprime_mensagem(mensagem);
-        //printf("\n");
+		//printf("recebeu tipo %d e sequencia %d\n\n", mensagem->tipo, mensagem->sequencia);
 
         if (sequencia_global >= 15)
             sequencia_global = 1;
@@ -142,7 +137,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
             perror("Erro ao receber mensagem no recebe_retorno");
         
         // Verifica se o marcador de início e a paridade são os corretos
-        if (mensagem->marc_inicio == MARC_INICIO) {
+        if ((mensagem->marc_inicio == MARC_INICIO)/* && (mensagem->sequencia != 4)*/) {
             //Testa a paridade
             if (testa_paridade(mensagem)) {
 
@@ -155,6 +150,11 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                     memcpy(buffer_aux, mensagem_aux.dados, mensagem_aux.size_msg);
 
 					init_mensagem(&mensagem_aux, mensagem_aux.size_msg, sequencia_global, mensagem_aux.tipo, buffer_aux);
+
+					printf("Remandando o seguinte:\n");
+					imprime_mensagem(&mensagem_aux);
+					printf("\n");
+
                     if (! manda_mensagem (soquete, &mensagem_aux))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
                 }
@@ -171,6 +171,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
         }
         else
             manda_nack(soquete);
+		
     }
 
 }
@@ -268,6 +269,27 @@ void manda_ack(int soquete) {
     if( ! manda_mensagem (soquete, &msg_ack)) {
         perror("Erro ao mandar ack");
     }
+}
+
+void manda_erro(int soquete) {
+	printf("Mandou um erro\n");
+
+	while(1){
+    	msg_t msg_erro;
+    	init_mensagem(&msg_erro, 0, sequencia_global, ERRO, "");
+    	if( ! manda_mensagem (soquete, &msg_erro)) {
+    	   perror("Erro ao mandar ack");
+    	}
+
+		switch (recebe_retorno(soquete, &msg_erro)){
+			case ACK:
+				return;
+				break;
+
+			case NACK:
+				break;
+		}
+	}
 }
 
 void escreve_string (int soquete, char* string_destino, msg_t *mensagem){

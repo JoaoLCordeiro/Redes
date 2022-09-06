@@ -18,8 +18,8 @@ int sequencia_global = 1;
 
 int main(){
     
-	//int soquete = ConexaoRawSocket("lo");
-    int soquete = ConexaoRawSocket("eno1");
+	int soquete = ConexaoRawSocket("lo");
+    //int soquete = ConexaoRawSocket("eno1");
     // printf ("soquete -> %d\n", soquete);
 
     msg_t mensagem;
