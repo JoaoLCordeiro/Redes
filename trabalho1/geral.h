@@ -63,7 +63,7 @@ int recebe_mensagem (int soquete, msg_t *mensagem);
  * @param dados (_char*_) : Dados
  * @return char : paridade dos dados
  */
-char calcula_paridade (int tamanho, char * dados);
+unsigned char calcula_paridade (int tamanho, char * dados);
 
 /**
  * @brief Testa para ver se a paridade confere

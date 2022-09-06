@@ -50,13 +50,14 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
     }
 }
 
-char calcula_paridade (int tamanho, char * dados){
+unsigned char calcula_paridade (int tamanho, char * dados){
     
     // Faz um XOR dos bits para cada byte da mensagem.
     unsigned char aux = dados[0];
-    for (int i = 1; i < tamanho; i++)
+    for (int i = 1; i < tamanho; i++){
         aux = aux ^ dados[i];
-    
+	}
+
     return aux;
 }
 
@@ -150,6 +151,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                     //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
                     char buffer_aux[TAM_BUFFER_DADOS];
 
+					memset(buffer_aux, 0, TAM_BUFFER_DADOS);
                     memcpy(buffer_aux, mensagem_aux.dados, mensagem_aux.size_msg);
 
 					init_mensagem(&mensagem_aux, mensagem_aux.size_msg, sequencia_global, mensagem_aux.tipo, buffer_aux);
