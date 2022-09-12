@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <poll.h>
 
 #include <sys/types.h>
 //#include <linux/types.h>
@@ -28,6 +29,15 @@ int manda_mensagem (int soquete, msg_t *mensagem){
 
 int recebe_mensagem (int soquete, msg_t *mensagem){
     while (1){
+		//cuida do timeout
+		struct pollfd fds;
+		int retorno_poll = poll(&fds, 1, TIMEOUT);
+
+		if (retorno_poll == 0)
+			return 2;
+		else if (retorno_poll < 0)
+			return 0;
+		
         if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0)
             return 0;
     
@@ -138,8 +148,14 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 	
     while (1) {
         // Recebe uma mensagem
-        if (! recebe_mensagem (soquete, mensagem)) 
+		int retorno_func = recebe_mensagem (soquete, mensagem);
+
+        if (retorno_func == 0) 
             perror("Erro ao receber mensagem no recebe_retorno");
+		else if (retorno_func == 2){
+			perror("Timeout");
+			continue;
+		}
         
         // Verifica se o marcador de início e a paridade são os corretos
         if ((mensagem->marc_inicio == MARC_INICIO)/* && (mensagem->sequencia != 4)*/) {

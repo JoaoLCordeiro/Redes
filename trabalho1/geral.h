@@ -1,6 +1,8 @@
 #ifndef __GERAL__
 #define __GERAL__
 
+#define TIMEOUT 1000*10
+
 #define TAM_BUFFER_DADOS 64
 #define BUFFER_IMENSO 65536
 
