@@ -31,6 +31,10 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
     while (1){
 		//cuida do timeout
 		struct pollfd fds;
+
+		fds.fd = soquete;
+		fds.events = POLLIN;
+
 		int retorno_poll = poll(&fds, 1, TIMEOUT);
 
 		if (retorno_poll == 0)

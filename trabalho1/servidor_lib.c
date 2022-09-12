@@ -18,7 +18,15 @@
 int recebe_mensagem_server(int soquete, msg_t *mensagem) {
 
     while (1) {
-        recebe_mensagem(soquete, mensagem);
+        int retorno_func = recebe_mensagem(soquete, mensagem);
+
+		if (retorno_func == 0) 
+            perror("Erro ao receber mensagem no recebe_retorno");
+		else if (retorno_func == 2){
+			perror("Timeout");
+			continue;
+		}
+
         if (mensagem->marc_inicio == MARC_INICIO) {
             if (testa_paridade(mensagem))
                 return mensagem->tipo;
