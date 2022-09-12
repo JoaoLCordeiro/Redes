@@ -65,7 +65,11 @@ int testa_paridade(msg_t*mensagem) {
     // Se ela é igual ou o seu complemente de dois ela chegou certo (teoricamente)
     if (mensagem->paridade - paridade == 256 || paridade == mensagem->paridade)
         return 1;
-    printf("PARIDADE CALCULADA %d ----- PARIDADE DA MENSAGEM %d\n", paridade, mensagem->paridade);    
+    printf("PARIDADE CALCULADA %d ----- PARIDADE DA MENSAGEM %d\n", paridade, mensagem->paridade);
+
+	printf("Chegou:\n");
+	imprime_mensagem(mensagem);
+	printf("\n");
     return 0;
 
 }
@@ -106,6 +110,7 @@ void imprime_mensagem(msg_t *mensagem) {
     printf("Sequencia -> %d\n", mensagem->sequencia);
     printf("Tipo -> %d\n", mensagem->tipo);
     printf("Mensagem ->%s\n", mensagem->dados);
+	printf("Tam Mem -> %ld\n", strlen(mensagem->dados));
     printf("Paridade -> %d\n", (int)mensagem->paridade);
     printf("Sequência global -> %d\n", sequencia_global);
 
@@ -151,9 +156,9 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 
 					init_mensagem(&mensagem_aux, mensagem_aux.size_msg, sequencia_global, mensagem_aux.tipo, buffer_aux);
 
-					printf("Remandando o seguinte:\n");
-					imprime_mensagem(&mensagem_aux);
-					printf("\n");
+					//printf("Remandando o seguinte:\n");
+					//imprime_mensagem(&mensagem_aux);
+					//printf("\n");
 
                     if (! manda_mensagem (soquete, &mensagem_aux))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
