@@ -8,6 +8,9 @@
 
 #define MARC_INICIO 126
 
+#define DESLIGADO 0
+#define LIGADO 1
+
 /*-----------------------------------------TIPOS-----------------------------------------------*/
 #define OK      1
 #define NACK    2
@@ -56,7 +59,7 @@ int manda_mensagem (int soquete, msg_t *mensagem);
  * @param mensagem (msg_t *) : Mensagem recebida
  * @return int : 0 se erro, 1 caso contrário 
  */
-int recebe_mensagem (int soquete, msg_t *mensagem);
+int recebe_mensagem (int soquete, msg_t *mensagem, int timeout);
 
 /**
  * @brief Calcula a paridade dos dados

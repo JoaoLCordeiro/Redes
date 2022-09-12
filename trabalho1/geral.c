@@ -27,7 +27,7 @@ int manda_mensagem (int soquete, msg_t *mensagem){
     return 1;
 }
 
-int recebe_mensagem (int soquete, msg_t *mensagem){
+int recebe_mensagem (int soquete, msg_t *mensagem, int timeout){
     while (1){
 		//cuida do timeout
 		struct pollfd fds;
@@ -37,10 +37,12 @@ int recebe_mensagem (int soquete, msg_t *mensagem){
 
 		int retorno_poll = poll(&fds, 1, TIMEOUT);
 
-		if (retorno_poll == 0)
-			return 2;
-		else if (retorno_poll < 0)
-			return 0;
+		if (timeout){
+			if (retorno_poll == 0)
+				return 2;
+			else if (retorno_poll < 0)
+				return 0;
+		}
 		
         if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0)
             return 0;
@@ -152,14 +154,14 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 	
     while (1) {
         // Recebe uma mensagem
-		int retorno_func = recebe_mensagem (soquete, mensagem);
+		int retorno_func = recebe_mensagem (soquete, mensagem, LIGADO);
 
         if (retorno_func == 0) 
             perror("Erro ao receber mensagem no recebe_retorno");
-		else if (retorno_func == 2){
-			perror("Timeout");
-			continue;
-		}
+		//else if (retorno_func == 2){
+		//	perror("Timeout");
+		//	continue;
+		//}
         
         // Verifica se o marcador de início e a paridade são os corretos
         if ((mensagem->marc_inicio == MARC_INICIO)/* && (mensagem->sequencia != 4)*/) {
@@ -167,7 +169,10 @@ int recebe_retorno(int soquete, msg_t *mensagem){
             if (testa_paridade(mensagem)) {
 
                 //se for um NACK, reenvia a mensagem
-                if (mensagem->tipo == NACK){
+                if ((mensagem->tipo == NACK) || (retorno_func == 2)){
+					if (retorno_func == 2)
+						perror ("Timout");
+
                     //aqui nao damos return pro laço recomeçar e esperar mais uma resposta
                     char buffer_aux[TAM_BUFFER_DADOS];
 

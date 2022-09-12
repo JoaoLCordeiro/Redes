@@ -18,7 +18,7 @@
 int recebe_mensagem_server(int soquete, msg_t *mensagem) {
 
     while (1) {
-        int retorno_func = recebe_mensagem(soquete, mensagem);
+        int retorno_func = recebe_mensagem(soquete, mensagem, DESLIGADO);
 
 		if (retorno_func == 0) 
             perror("Erro ao receber mensagem no recebe_retorno");
