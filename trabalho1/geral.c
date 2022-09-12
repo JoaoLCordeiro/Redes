@@ -97,12 +97,21 @@ int compara_comando(char *comando){
         return PUT;
     else if (! strcmp(comando, "get"))
         return GET;
+    
+    else if (! strcmp(comando, "mkdirl"))
+        return MKDIRL;
     else if (! strcmp(comando, "mkdir"))
         return MKDIR;
+    
     else if (! strcmp(comando, "ls") || ! strcmp(comando, "ls -a") || ! strcmp(comando, "ls -l"))
         return LS;
+    else if (! strcmp(comando, "lsl") || ! strcmp(comando, "lsl -a") || ! strcmp(comando, "lsl -l"))
+        return LSL;
+    
     else if (! strcmp(comando, "cd"))
         return CD;
+    else if (! strcmp(comando, "cdl"))
+        return CDL;
     
     return 0;
 

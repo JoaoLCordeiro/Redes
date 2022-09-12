@@ -25,6 +25,11 @@
 #define DADOS   32
 #define FIM     46
 #define NA_TELA 63
+
+
+#define CDL      61     // cd local
+#define LSL      71     // ls local
+#define MKDIRL   81     // mkdir local
 /*---------------------------------------------------------------------------------------------*/
 
 

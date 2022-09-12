@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 //#include <linux/types.h>
@@ -62,6 +63,7 @@ void put_dados_cliente (int soquete, FILE * arq){
     }
 }
 
+
 void put_tamanho_cliente (int soquete, char *nome_arquivo){
 
     printf("put_tamanho_cliente\n");
@@ -100,6 +102,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
         }
     }
 }
+
 
 void trata_put_cliente (int soquete){
 
@@ -236,6 +239,7 @@ void get_tamanho_cliente(int soquete, char *nome_arquivo, msg_t *msg_tam_server)
 
 }
 
+
 void trata_get_cliente(int soquete){
 
 
@@ -280,6 +284,7 @@ void trata_get_cliente(int soquete){
 
 }
 /*****************************************FIM GET**********************************************/
+
 
 /*****************************************MKDIR************************************************/
 void trata_mkdir_cliente(int soquete){
@@ -328,6 +333,7 @@ void trata_mkdir_cliente(int soquete){
     return;
 }
 /***************************************FIM MKDIR**********************************************/
+
 
 /******************************************LS**************************************************/
 void trata_ls_cliente(int soquete, char * buffer_c){
@@ -420,3 +426,70 @@ void trata_cd_cliente(int soquete){
 
 }
 /***************************************FIM cd*************************************************/
+
+
+/***********************************FUNÇÕES LOCAIS*********************************************/
+void trata_local_ls_cliente(char *comando) {
+
+    comando[2] = ' ';
+
+    if ( access("./", R_OK) == 0 ) {
+        
+        FILE *saida_comando = popen(comando, "r");
+        char buffer_arq[63];
+        int bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, saida_comando);
+
+        while (bytes_lidos != 0){
+            printf("%s", buffer_arq);
+            memset(buffer_arq, 0, TAM_BUFFER_DADOS);
+            bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, saida_comando);
+        
+        }
+        
+        pclose(saida_comando);
+    }
+    
+}
+
+
+void trata_local_cd_cliente() {
+
+
+    char caminho_diretorio[BUFFER_IMENSO];
+    printf("Digite o diretório que você deseja ir\n");
+
+    scanf("%65535[^\n]", caminho_diretorio);
+    getchar();
+
+
+    if ( chdir (caminho_diretorio) == -1) {
+        perror("Não foi possível criar o diretório localmente");
+        return;
+    }
+
+}
+
+void trata_local_mkdir_cliente() {
+
+    printf("trata_mkdir_sevidor\n");
+
+    char nome_diretorio[BUFFER_IMENSO];
+    printf("Digite o nome do diretório que você deseja criar\n");
+
+    scanf("%65535[^\n]", nome_diretorio);
+    
+    if (! testa_existencia_diretorio(nome_diretorio)) {
+        perror("Não foi possível criar o diretório localmente");
+    }
+    else {
+        
+        FILE *saida_comando;
+        char comando[BUFFER_IMENSO] = "mkdir ";
+        
+        strcat(comando, nome_diretorio);
+        saida_comando = popen(comando, "r");
+
+        pclose (saida_comando);
+    }
+}
+/**********************************FIM FUNC LOCAIS*********************************************/

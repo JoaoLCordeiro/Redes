@@ -20,8 +20,8 @@ int sequencia_global = 1;
 int main(){
     
     char buffer_c[TAM_BUF];
-	//int soquete = ConexaoRawSocket("lo");
-	int soquete = ConexaoRawSocket("eno1");
+	int soquete = ConexaoRawSocket("lo");
+	//int soquete = ConexaoRawSocket("eno1");
     //int soquete = ConexaoRawSocket("enp1s0");
 
     while (1) {
@@ -39,16 +39,29 @@ int main(){
                 break;
             case GET:
                 trata_get_cliente(soquete);
-                break; 
+                break;
+
             case MKDIR:
                 trata_mkdir_cliente(soquete);
                 break;
+            case MKDIRL:
+                trata_local_mkdir_cliente();
+                break;
+
             case LS:
                 trata_ls_cliente(soquete, buffer_c);
                 break;
+            case LSL:
+                trata_local_ls_cliente(buffer_c);
+                break;
+
             case CD:
                 trata_cd_cliente(soquete);
                 break;
+            case CDL:
+                trata_local_cd_cliente();
+                break;
+            
             default:
                 printf("Comando não existente\n");
                 break;

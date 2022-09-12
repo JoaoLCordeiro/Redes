@@ -69,13 +69,48 @@ void trata_mkdir_cliente(int soquete);
 /*************************************FIM MKDIR***********************************************/
 
 /******************************************LS*************************************************/
+
+/**
+ * @brief Trata do LS do cliente para o servido.
+ * 
+ * @param soquete (_int_) : soquete
+ * @param buffer_c (_char *_) : buffer contendo o comando.
+ */
 void trata_ls_cliente(int soquete, char * buffer_c);
 /***************************************FIM LS************************************************/
 
 /******************************************CD*************************************************/
 
-
+/**
+ * @brief Trata do CD do cliente para o servidor.
+ * 
+ * @param soquete (_int_) : soquete
+ * @param buffer_c (_char *_) : buffer contendo o comando.
+ */
 void trata_cd_cliente(int soquete);
 /***************************************FIM CD************************************************/
+
+
+/***********************************FUNÇÕES LOCAIS*********************************************/
+
+/**
+ * @brief Trata do comando ls local.
+ * 
+ * @param comando (_char *_) : Comando
+ */
+void trata_local_ls_cliente(char *comando);
+
+/**
+ * @brief Trata do comando cd local.
+ * 
+ */
+void trata_local_cd_cliente();
+
+/**
+ * @brief Trata do comando mkdir local.
+ * 
+ */
+void trata_local_mkdir_cliente();
+/**********************************FIM FUNC LOCAIS*********************************************/
 
 #endif
