@@ -96,11 +96,11 @@ int testa_paridade(msg_t*mensagem) {
     // Se ela é igual ou o seu complemente de dois ela chegou certo (teoricamente)
     if (mensagem->paridade - paridade == 256 || paridade == mensagem->paridade)
         return 1;
-    printf("PARIDADE CALCULADA %d ----- PARIDADE DA MENSAGEM %d\n", paridade, mensagem->paridade);
+    /*printf("PARIDADE CALCULADA %d ----- PARIDADE DA MENSAGEM %d\n", paridade, mensagem->paridade);
 
 	printf("Chegou:\n");
 	imprime_mensagem(mensagem);
-	printf("\n");
+	printf("\n");*/
     return 0;
 
 }
@@ -188,9 +188,9 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 		//}
         
         // Verifica se o marcador de início e a paridade são os corretos
-        if ((mensagem->marc_inicio == MARC_INICIO)/* && (mensagem->sequencia != 4)*/) {
+        if ((mensagem->marc_inicio == MARC_INICIO) || (retorno_func == 2)) {
             //Testa a paridade
-            if (testa_paridade(mensagem)) {
+            if (testa_paridade(mensagem) || (retorno_func == 2)) {
 
                 //se for um NACK, reenvia a mensagem
                 if ((mensagem->tipo == NACK) || (retorno_func == 2)){
