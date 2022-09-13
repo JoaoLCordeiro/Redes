@@ -15,17 +15,17 @@
 
 #include "geral.h"
 
-void mascara (char *dados){
-	for (int i = 0 ; i < 64 ; i += 2){
+void mascara (char *dados, int tam){
+	for (int i = 0 ; i < tam ; i += 2){
 		dados[i] = dados[i] ^ (char) 85;
 	}
-	for (int i = 1 ; i < 64 ; i += 2){
+	for (int i = 1 ; i < tam ; i += 2){
 		dados[i] = dados[i] ^ (char) 51;
 	}
 }
 
 int manda_mensagem (int soquete, msg_t *mensagem){
-	mascara (mensagem->dados);
+	mascara (mensagem->dados, mensagem->size_msg);
 
     if (send(soquete, mensagem, sizeof(msg_t), 0) < 0){
         return 0;
@@ -60,7 +60,7 @@ int recebe_mensagem (int soquete, msg_t *mensagem, int timeout){
         if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0)
             return 0;
 
-		mascara (mensagem->dados);
+		mascara (mensagem->dados, mensagem->size_msg);
     
         if (mensagem->sequencia != sequencia_global) {
             continue;
