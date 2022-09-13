@@ -57,7 +57,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
     }
 
     int conta_mensagens = 1;
-    
+	
     while (1){
         init_mensagem(mensagem, 0, sequencia_global, ACK, "");
         if (! manda_mensagem (soquete, mensagem))
@@ -74,6 +74,9 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
                 break;
 
             case FIM:
+				
+				executa_chmod (mensagem->dados, nome_arq, "./destino_servidor/");
+
                 init_mensagem(mensagem, 0, sequencia_global, ACK, "");
                 manda_mensagem (soquete, mensagem);
                 fclose(arq);
@@ -167,7 +170,7 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
 /****************************************FIM PUT***********************************************/
 
 /*****************************************GET**************************************************/
-void get_dados_server(int soquete, FILE *arq_server){
+void get_dados_server(int soquete, FILE *arq_server, int permissao){
 
     int contador = 1;
     printf("get_dados_server\n");
@@ -198,8 +201,11 @@ void get_dados_server(int soquete, FILE *arq_server){
         bytes_lidos = fread(buffer_arq, sizeof(char), TAM_BUFFER_DADOS - 1, arq_server);
     }
 
-    //manda uma mensagem do tipo FIM
-    init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
+	//manda uma mensagem do tipo FIM
+	char permissao_string[TAM_BUFFER_DADOS - 1];
+    sprintf(permissao_string, "%d", permissao);
+
+    init_mensagem(&mensagem, strlen(permissao_string), sequencia_global, FIM, permissao_string);
 
     //considerando que o cliente responde um FIM com um ACK
     while (1){
@@ -240,6 +246,8 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
         return;
     }
 
+	int permissao = pega_permissao_arq (nome_arquivo);
+
     //Abre o arquivo, pega o seu tamanho, transforma o tamanho em uma string 
     FILE *arq_server = abre_arquivo(nome_arquivo, "rb");
     int tamanho = tamanho_do_arquivo(arq_server);
@@ -259,7 +267,7 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
 
             //se for o tamanho da mensagem, continua
             case OK:
-                get_dados_server(soquete, arq_server);
+                get_dados_server(soquete, arq_server, permissao);
                 fclose(arq_server);
                 //voltou da função dos dados, sai dessa funcao
                 return;

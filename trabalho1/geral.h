@@ -219,4 +219,9 @@ void escreve_string (int soquete, char* string_destino, msg_t *mensagem);
  */
 void manda_nome (int soquete, char* nome, int tipo);
 
+
+int pega_permissao_arq (char *nome_arq);
+
+void executa_chmod (char *permissao, char *nome_arq, char *diretorio);
+
 #endif

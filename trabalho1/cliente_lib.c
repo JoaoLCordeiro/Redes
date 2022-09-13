@@ -14,7 +14,7 @@
 
 
 /******************************************PUT**************************************************/
-void put_dados_cliente (int soquete, FILE * arq){
+void put_dados_cliente (int soquete, FILE * arq, int permissao){
 
     int contador = 1;
     printf("put_dados_cliente\n");
@@ -46,7 +46,10 @@ void put_dados_cliente (int soquete, FILE * arq){
     }
 
     //manda uma mensagem do tipo FIM
-    init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
+	char permissao_string[TAM_BUFFER_DADOS - 1];
+    sprintf(permissao_string, "%d", permissao);
+
+    init_mensagem(&mensagem, strlen(permissao_string), sequencia_global, FIM, permissao_string);
 
     //considerando que o servidor responde um FIM com um ACK
     while (1){
@@ -68,10 +71,11 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
 
     printf("put_tamanho_cliente\n");
 
+	int permissao = pega_permissao_arq (nome_arquivo);
+
     msg_t mensagem;
 
     FILE *arq = abre_arquivo(nome_arquivo, "rb");
-
 
     int tamanho = tamanho_do_arquivo(arq);
     char tamanho_string[32];
@@ -88,7 +92,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
         switch (recebe_retorno(soquete, &mensagem)) {
             //se for ok, continua
             case OK:
-                put_dados_cliente(soquete, arq);
+                put_dados_cliente(soquete, arq, permissao);
                 printf("put_tamanho_cliente: retornando...\n");
                 return;
                 break;
@@ -184,6 +188,8 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
                 break;
 
             case FIM:
+				executa_chmod (mensagem->dados, nome_arquivo, "./destino_cliente/");
+
                 init_mensagem(mensagem, 0, sequencia_global, ACK, "");
                 manda_mensagem (soquete, mensagem);
                 fclose(arq);

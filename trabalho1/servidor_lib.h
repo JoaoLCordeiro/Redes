@@ -39,15 +39,6 @@ void put_tamanho_server(int soquete, char *nome_arq);
  * @param mensagem 
  */
 void trata_put_servidor(int soquete, msg_t* mensagem);
-
-/**
- * @brief Envia os bytes do arquivo para o cliente.
- * 
- * @param soquete (int) : soquete.
- * @param arq_server (FILE*) : Descritor do arquivo que o cliente pediu. 
- *  
- */
-void get_dados_server(int soquete, FILE *arq_server);
 /****************************************FIM PUT***********************************************/
 
 
@@ -59,7 +50,7 @@ void get_dados_server(int soquete, FILE *arq_server);
  * @param soquete (int) : Soquete
  * @param arq_server (FILE *) : Arquivo que o cliente pediu
  */
-void get_dados_server(int soquete, FILE *arq_server);
+void get_dados_server(int soquete, FILE *arq_server, int permissao);
 
 /**
  * @brief Se o servidor recebeu um get,

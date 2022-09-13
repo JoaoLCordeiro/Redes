@@ -11,8 +11,9 @@
  * 
  * @param soquete (_int_) : soquete
  * @param arq (_FILE*_) : Descritor do arquivo
+ * @param permissao (_int_) : Permissao do arquivo
  */
-void put_dados_cliente (int soquete, FILE * arq);
+void put_dados_cliente (int soquete, FILE * arq, int permissao);
 
 /**
  * @brief Trata do put do cliente para o servidor

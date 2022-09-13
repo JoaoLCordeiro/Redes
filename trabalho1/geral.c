@@ -5,6 +5,8 @@
 #include <dirent.h>
 #include <poll.h>
 
+#include <sys/stat.h>
+
 #include <sys/types.h>
 //#include <linux/types.h>
 
@@ -436,4 +438,46 @@ void manda_nome (int soquete, char* nome, int tipo){
         perror ("manda_nome: erro inesperado em mensagem grande\n");
         return;
     }
+}
+
+int pega_permissao_arq (char *nome_arq){
+    struct stat fileStat;
+    if(stat(nome_arq, &fileStat) < 0){    
+        return -1;
+	}
+
+	int permissao = 0;
+	if (fileStat.st_mode & S_IRUSR)
+		permissao += 400;
+	if (fileStat.st_mode & S_IWUSR)
+		permissao += 200;
+	if (fileStat.st_mode & S_IXUSR)
+		permissao += 100;
+
+	if (fileStat.st_mode & S_IRGRP)
+		permissao += 40;
+	if (fileStat.st_mode & S_IWGRP)
+		permissao += 20;
+	if (fileStat.st_mode & S_IXGRP)
+		permissao += 10;
+
+	if (fileStat.st_mode & S_IROTH)
+		permissao += 4;
+	if (fileStat.st_mode & S_IWOTH)
+		permissao += 2;
+	if (fileStat.st_mode & S_IXOTH)
+		permissao += 1;
+
+    return permissao;
+}
+
+void executa_chmod (char *permissao, char *nome_arq, char *diretorio){
+	char comando_chmod[BUFFER_IMENSO] = "chmod ";
+
+	strcat (comando_chmod, permissao);
+	strcat (comando_chmod, " ");
+	strcat (comando_chmod, diretorio);		//APAGAR ESTA LINHA DEPOIS BELEZA?
+	strcat (comando_chmod, nome_arq);
+
+	system(comando_chmod);
 }
