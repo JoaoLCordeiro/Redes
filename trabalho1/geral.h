@@ -55,7 +55,7 @@ typedef struct msg_t
  * @param mensagem (msg_t *) : Mensagem a ser enviada
  * @return int 0 se erro, 1 caso contrário
  */
-int manda_mensagem (int soquete, msg_t *mensagem);
+int manda_mensagem (int soquete, msg_t *mensagem, int flag_mask);
 
 /**
  * @brief Recebe mensagem.
@@ -64,7 +64,7 @@ int manda_mensagem (int soquete, msg_t *mensagem);
  * @param mensagem (msg_t *) : Mensagem recebida
  * @return int : 0 se erro, 1 caso contrário 
  */
-int recebe_mensagem (int soquete, msg_t *mensagem, int timeout);
+int recebe_mensagem (int soquete, msg_t *mensagem, int timeout, int flag_mask);
 
 /**
  * @brief Calcula a paridade dos dados

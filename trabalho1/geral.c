@@ -24,8 +24,10 @@ void mascara (char *dados, int tam){
 	}
 }
 
-int manda_mensagem (int soquete, msg_t *mensagem){
-	mascara (mensagem->dados, mensagem->size_msg);
+int manda_mensagem (int soquete, msg_t *mensagem, int flag_mask){
+	
+    if (flag_mask)
+        mascara (mensagem->dados, mensagem->size_msg);
 
     if (send(soquete, mensagem, sizeof(msg_t), 0) < 0){
         return 0;
@@ -40,7 +42,7 @@ int manda_mensagem (int soquete, msg_t *mensagem){
     return 1;
 }
 
-int recebe_mensagem (int soquete, msg_t *mensagem, int timeout){
+int recebe_mensagem (int soquete, msg_t *mensagem, int timeout, int flag_mask){
     while (1){
 		//cuida do timeout
 		struct pollfd fds;
@@ -60,7 +62,8 @@ int recebe_mensagem (int soquete, msg_t *mensagem, int timeout){
         if (recv(soquete, mensagem, sizeof(msg_t), 0) < 0)
             return 0;
 
-		mascara (mensagem->dados, mensagem->size_msg);
+        if (flag_mask)
+		    mascara (mensagem->dados, mensagem->size_msg);
     
         if (mensagem->sequencia != sequencia_global) {
             continue;
@@ -171,6 +174,7 @@ void init_mensagem(msg_t *mensagem, int tamanho, int sequencia, int tipo_mensage
 
 int recebe_retorno(int soquete, msg_t *mensagem){
 	msg_t mensagem_aux;
+    int flag_mask = 0;
 
 	mensagem_aux.size_msg	= mensagem->size_msg;
 	mensagem_aux.tipo		= mensagem->tipo;
@@ -178,14 +182,11 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 	
     while (1) {
         // Recebe uma mensagem
-		int retorno_func = recebe_mensagem (soquete, mensagem, LIGADO);
+		int retorno_func = recebe_mensagem (soquete, mensagem, LIGADO, flag_mask);
+        flag_mask = 0;
 
         if (retorno_func == 0) 
             perror("Erro ao receber mensagem no recebe_retorno");
-		//else if (retorno_func == 2){
-		//	perror("Timeout");
-		//	continue;
-		//}
         
         // Verifica se o marcador de início e a paridade são os corretos
         if ((mensagem->marc_inicio == MARC_INICIO) || (retorno_func == 2)) {
@@ -194,6 +195,7 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 
                 //se for um NACK, reenvia a mensagem
                 if ((mensagem->tipo == NACK) || (retorno_func == 2)){
+                    flag_mask = 1;
 					if (retorno_func == 2)
 						perror ("Timout");
 
@@ -209,8 +211,9 @@ int recebe_retorno(int soquete, msg_t *mensagem){
 					//imprime_mensagem(&mensagem_aux);
 					//printf("\n");
 
-                    if (! manda_mensagem (soquete, &mensagem_aux))
+                    if (! manda_mensagem (soquete, &mensagem_aux, flag_mask))
                         perror("Erro ao re-mandar mensagem no recebe_retorno_put");
+                    flag_mask = 0;
                 }
 
                 // Senão retorna o tipo    
@@ -219,12 +222,16 @@ int recebe_retorno(int soquete, msg_t *mensagem){
                 }
             
             }
-            else
+            else{
             //retorna NACK para mensagens com erro no marcador ou na paridade
-                manda_nack(soquete);    
+                flag_mask = 1;
+                manda_nack(soquete);
+            }    
         }
-        else
+        else {
+            flag_mask = 1;
             manda_nack(soquete);
+        }
 		
     }
 
@@ -309,7 +316,7 @@ void manda_nack(int soquete) {
 
     msg_t msg_nack;
     init_mensagem(&msg_nack, 0, sequencia_global, NACK, "");
-    if( ! manda_mensagem (soquete, &msg_nack)) {
+    if( ! manda_mensagem (soquete, &msg_nack, 0)) {
         perror("Erro ao mandar nack");
     }
 
@@ -320,7 +327,7 @@ void manda_ack(int soquete) {
 
     msg_t msg_ack;
     init_mensagem(&msg_ack, 0, sequencia_global, ACK, "");
-    if( ! manda_mensagem (soquete, &msg_ack)) {
+    if( ! manda_mensagem (soquete, &msg_ack, 0)) {
         perror("Erro ao mandar ack");
     }
 }
@@ -331,7 +338,7 @@ void manda_erro(int soquete) {
 	while(1){
     	msg_t msg_erro;
     	init_mensagem(&msg_erro, 0, sequencia_global, ERRO, "");
-    	if( ! manda_mensagem (soquete, &msg_erro)) {
+    	if( ! manda_mensagem (soquete, &msg_erro, 0)) {
     	   perror("Erro ao mandar ack");
     	}
 
@@ -356,7 +363,7 @@ void escreve_string (int soquete, char* string_destino, msg_t *mensagem){
     while(1){
         //manda um ok
         init_mensagem(&mensagem_ok, 0, sequencia_global, OK, "");
-        if (! manda_mensagem(soquete, &mensagem_ok))
+        if (! manda_mensagem(soquete, &mensagem_ok, 0))
             perror ("escreve_string: erro no manda mensagem\n");
 
         //recebe mais uma mensagem
@@ -389,7 +396,7 @@ void manda_nome (int soquete, char* nome, int tipo){
 
         //simplesmente manda o nome em uma unica mensagem
         init_mensagem(&mensagem, strlen(nome), sequencia_global, tipo, nome);
-        manda_mensagem (soquete, &mensagem);
+        manda_mensagem (soquete, &mensagem, 0);
 
         if (recebe_retorno(soquete, &mensagem) == OK)
             return;
@@ -405,7 +412,7 @@ void manda_nome (int soquete, char* nome, int tipo){
 
         //manda a primeira mensagem
         init_mensagem (&mensagem, 63, sequencia_global, tipo, buffer);
-        manda_mensagem (soquete, &mensagem);
+        manda_mensagem (soquete, &mensagem, 0);
 
         int cont = 1;
         printf("manda_nome: enviou mensagem %d\n", cont);
@@ -424,7 +431,7 @@ void manda_nome (int soquete, char* nome, int tipo){
             memcpy (buffer, nome, 63);
 
             init_mensagem (&mensagem, 63, sequencia_global, DESC, buffer);
-            manda_mensagem (soquete, &mensagem);
+            manda_mensagem (soquete, &mensagem, 0);
 
             cont++;
             printf("manda_nome: enviou mensagem %d\n", cont);
@@ -440,7 +447,7 @@ void manda_nome (int soquete, char* nome, int tipo){
 
         //manda a ultima mensagem
         init_mensagem (&mensagem, strlen(nome), sequencia_global, DESC, nome);
-        manda_mensagem (soquete, &mensagem);
+        manda_mensagem (soquete, &mensagem, 0);
 
         cont++;
         printf("manda_nome: enviou mensagem %d\n", cont);
