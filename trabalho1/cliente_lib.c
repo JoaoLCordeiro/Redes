@@ -161,7 +161,7 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
 
     char aux[128];
     //isso serve para criar outro arquivo, APENAS PARA TESTES
-    strcpy(aux, "./destino_cliente/");
+    strcpy(aux, "./");
     strcat(aux, nome_arquivo);
 
     FILE * arq = abre_arquivo(aux, "wb+");
@@ -188,7 +188,7 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
                 break;
 
             case FIM:
-				executa_chmod (mensagem->dados, nome_arquivo, "./destino_cliente/");
+				executa_chmod (mensagem->dados, nome_arquivo, "./");
 
                 init_mensagem(mensagem, 0, sequencia_global, ACK, "");
                 manda_mensagem (soquete, mensagem);

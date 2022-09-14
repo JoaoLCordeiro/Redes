@@ -47,7 +47,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 
     char aux[128];
     //isso serve para criar outro arquivo, APENAS PARA TESTES
-    strcpy(aux, "./destino_servidor/");
+    strcpy(aux, "./");
     strcat(aux, nome_arq);
 
     FILE * arq = abre_arquivo(aux, "wb+");
@@ -75,7 +75,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 
             case FIM:
 				
-				executa_chmod (mensagem->dados, nome_arq, "./destino_servidor/");
+				executa_chmod (mensagem->dados, nome_arq, "./");
 
                 init_mensagem(mensagem, 0, sequencia_global, ACK, "");
                 manda_mensagem (soquete, mensagem);
