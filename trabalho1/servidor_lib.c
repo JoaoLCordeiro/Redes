@@ -18,7 +18,7 @@
 int recebe_mensagem_server(int soquete, msg_t *mensagem) {
 
     while (1) {
-        int retorno_func = recebe_mensagem(soquete, mensagem, DESLIGADO);
+        int retorno_func = recebe_mensagem(soquete, mensagem, DESLIGADO, 0);
 
 		if (retorno_func == 0) 
             perror("Erro ao receber mensagem no recebe_retorno");
@@ -60,7 +60,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 	
     while (1){
         init_mensagem(mensagem, 0, sequencia_global, ACK, "");
-        if (! manda_mensagem (soquete, mensagem))
+        if (! manda_mensagem (soquete, mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, mensagem)) {
@@ -78,7 +78,7 @@ void put_dados_server(int soquete, msg_t *mensagem, char *nome_arq) {
 				executa_chmod (mensagem->dados, nome_arq, "./");
 
                 init_mensagem(mensagem, 0, sequencia_global, ACK, "");
-                manda_mensagem (soquete, mensagem);
+                manda_mensagem (soquete, mensagem, 0);
                 fclose(arq);
                 printf("%d\n", conta_mensagens);
                 return;
@@ -108,7 +108,7 @@ void put_tamanho_server(int soquete, char *nome_arq){
         init_mensagem(&mensagem, 0, sequencia_global, OK, "");
 
         //manda um ok
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, &mensagem)) {
@@ -149,7 +149,7 @@ void trata_put_servidor(int soquete, msg_t* msg_put_inicial){
         init_mensagem(&mensagem, 0, sequencia_global, OK, "");
 
         //manda um ok
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, &mensagem)) {
@@ -186,7 +186,7 @@ void get_dados_server(int soquete, FILE *arq_server, int permissao){
         init_mensagem(&mensagem, bytes_lidos, sequencia_global, DADOS, buffer_arq);
         int ack = 0;
         while (! ack){
-            if (! manda_mensagem (soquete, &mensagem))
+            if (! manda_mensagem (soquete, &mensagem, 0))
                 perror("Erro ao enviar mensagem no put_dados");
 
             switch (recebe_retorno(soquete, &mensagem)) {
@@ -209,7 +209,7 @@ void get_dados_server(int soquete, FILE *arq_server, int permissao){
 
     //considerando que o cliente responde um FIM com um ACK
     while (1){
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no put_dados");
 
         switch (recebe_retorno(soquete, &mensagem)) {
@@ -259,7 +259,7 @@ void trata_get_servidor(int soquete, msg_t* msg_get_inicial) {
         init_mensagem(&mensagem, strlen(tamanho_string), sequencia_global, DESC, tamanho_string);
 
         //manda uma mensagem com o tamanho
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_get_servidor");
 
         // Recebe um ok ou erro do cliente [get_tamanho_cliente]
@@ -312,7 +312,7 @@ void trata_mkdir_servidor(int soquete, msg_t* msg_nome_diretorio){
     }
 
     //manda um ok ou um erro
-    if (! manda_mensagem (soquete, &mensagem))
+    if (! manda_mensagem (soquete, &mensagem, 0))
         perror("Erro ao enviar mensagem no trata_put_servidor");
     switch (recebe_retorno(soquete, &mensagem)) {
         
@@ -341,7 +341,7 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
         init_mensagem(&msg, 0, sequencia_global, ERRO, "");
 
         //Manda mensagem com o erro
-        if (! manda_mensagem(soquete, &msg)) {
+        if (! manda_mensagem(soquete, &msg, 0)) {
             perror("Não foi possível enviar ERRO no trata_ls_servidor");
         }
 
@@ -369,7 +369,7 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
         init_mensagem(&msg, bytes_lidos, sequencia_global, NA_TELA, buffer_arq);
         int ack = 0;
         while (! ack){
-            if (! manda_mensagem (soquete, &msg))
+            if (! manda_mensagem (soquete, &msg, 0))
                 perror("Erro ao enviar mensagem no put_dados");
 
             switch (recebe_retorno(soquete, &msg)) {
@@ -390,7 +390,7 @@ void trata_ls_servidor(int soquete, msg_t *mensagem){
 
     //considerando que o cliente responde um FIM com um ACK
     while (1){
-        if (! manda_mensagem (soquete, &msg))
+        if (! manda_mensagem (soquete, &msg, 0))
             perror("Erro ao enviar mensagem no put_dados");
 
         switch (recebe_retorno(soquete, &msg)) {
@@ -422,7 +422,7 @@ void trata_cd_servidor(int soquete, msg_t *mensagem){
         init_mensagem(&msg, 0, sequencia_global, OK, "");
     }
                 //Manda mensagem com o erro
-    if (! manda_mensagem(soquete, &msg)) {
+    if (! manda_mensagem(soquete, &msg, 0)) {
         perror("Não foi possível enviar o retorno no trata_cd_servidor");
     }
     //Espera resposta do cliente (ACK)

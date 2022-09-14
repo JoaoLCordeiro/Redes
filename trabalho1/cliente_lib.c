@@ -30,7 +30,7 @@ void put_dados_cliente (int soquete, FILE * arq, int permissao){
         init_mensagem(&mensagem, bytes_lidos, sequencia_global, DADOS, buffer_arq);
         int ack = 0;
         while (! ack){
-            if (! manda_mensagem (soquete, &mensagem))
+            if (! manda_mensagem (soquete, &mensagem, 0))
                 perror("Erro ao enviar mensagem no put_dados");
 
             switch (recebe_retorno(soquete, &mensagem)) {
@@ -53,7 +53,7 @@ void put_dados_cliente (int soquete, FILE * arq, int permissao){
 
     //considerando que o servidor responde um FIM com um ACK
     while (1){
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no put_dados");
 
         switch (recebe_retorno(soquete, &mensagem)) {
@@ -86,7 +86,7 @@ void put_tamanho_cliente (int soquete, char *nome_arquivo){
     init_mensagem(&mensagem, strlen(tamanho_string), sequencia_global, DESC, tamanho_string);
 
     while (1){
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no put_tamanho");
 
         switch (recebe_retorno(soquete, &mensagem)) {
@@ -129,7 +129,7 @@ void trata_put_cliente (int soquete){
     init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
 
     while (1){
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_cliente");
 
         switch (recebe_retorno(soquete, &mensagem)) {
@@ -174,7 +174,7 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
     
     while (1){
         init_mensagem(mensagem, 0, sequencia_global, ACK, "");
-        if (! manda_mensagem (soquete, mensagem))
+        if (! manda_mensagem (soquete, mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         switch (recebe_retorno(soquete, mensagem)) {
@@ -191,7 +191,7 @@ void get_dados_cliente(int soquete, msg_t* mensagem, char *nome_arquivo){
 				executa_chmod (mensagem->dados, nome_arquivo, "./");
 
                 init_mensagem(mensagem, 0, sequencia_global, ACK, "");
-                manda_mensagem (soquete, mensagem);
+                manda_mensagem (soquete, mensagem, 0);
                 fclose(arq);
                 printf("%d\n", conta_mensagens);
                 return;
@@ -219,7 +219,7 @@ void get_tamanho_cliente(int soquete, char *nome_arquivo, msg_t *msg_tam_server)
         init_mensagem(&mensagem, 0, sequencia_global, OK, "");
 
         //manda um ok
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_servidor");
 
         //Essa mensagem possui os primeiros bytes da mensagem
@@ -264,7 +264,7 @@ void trata_get_cliente(int soquete){
     init_mensagem(&mensagem, 0, sequencia_global, FIM, 0);
 
     while (1){
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_put_cliente");
 
         /*Recebe uma mensagem com o tamanho do arquivo*/
@@ -314,7 +314,7 @@ void trata_mkdir_cliente(int soquete){
     init_mensagem(&mensagem, 0, sequencia_global, FIM, "");
 
     while (1){
-        if (! manda_mensagem (soquete, &mensagem))
+        if (! manda_mensagem (soquete, &mensagem, 0))
             perror("Erro ao enviar mensagem no trata_mkdir_cliente");
 
         /*Recebe uma mensagem com o tamanho do arquivo*/
@@ -350,7 +350,7 @@ void trata_ls_cliente(int soquete, char * buffer_c){
 
     init_mensagem(&mensagem_ls, strlen(buffer_c), sequencia_global, LS, buffer_c);
     while (1){
-        if (! manda_mensagem (soquete, &mensagem_ls))
+        if (! manda_mensagem (soquete, &mensagem_ls, 0))
             perror("Erro ao enviar mensagem no trata_ls_cliente");
 
         /*Recebe uma mensagem com o tamanho do arquivo*/
@@ -400,7 +400,7 @@ void trata_cd_cliente(int soquete){
     //manda um fim
     init_mensagem(&mensagem_cd, 0, sequencia_global, FIM, "");
     while (1){
-        if (! manda_mensagem (soquete, &mensagem_cd))
+        if (! manda_mensagem (soquete, &mensagem_cd, 0))
             perror("Erro ao enviar mensagem no trata_cd_cliente");
 
         /*Recebe uma mensagem com o tamanho do arquivo*/
